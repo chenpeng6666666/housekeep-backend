@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * @author Xy
@@ -79,6 +80,7 @@ public class UserController {
         User user = new User();
         BeanUtil.copyProperties(userUpdateDto, user);
         // 2 修改方法
+        user.setUpdateTime(new Date());
         boolean b = userService.updateById(user);
         ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR, "修改失败");
         return ResultUtils.success("修改成功");

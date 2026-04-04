@@ -1,4 +1,4 @@
-package com.itxc.housekeepbackend.Constant;
+package com.itxc.housekeepbackend.constant;
 
 public interface UserConstant {
 

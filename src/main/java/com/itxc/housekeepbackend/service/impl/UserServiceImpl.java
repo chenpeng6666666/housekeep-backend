@@ -15,7 +15,9 @@ import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import static com.itxc.housekeepbackend.Constant.UserConstant.PASSWORD_PRE;
+import java.util.Date;
+
+import static com.itxc.housekeepbackend.constant.UserConstant.PASSWORD_PRE;
 
 /**
 * @author Lenovo
@@ -42,6 +44,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setNickname("用户_" + phone.substring(7)); // 默认昵称
         user.setPhone(phone);
         user.setPassword(getEncryptPassword(password));
+        user.setCreateTime(new Date());
+        user.setUpdateTime(new Date());
         // 4 新增用户
         this.save(user);
     }
