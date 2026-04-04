@@ -1,10 +1,13 @@
 package com.itxc.housekeepbackend.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itxc.housekeepbackend.model.dto.user.UserLoginDto;
 import com.itxc.housekeepbackend.model.dto.user.UserRegisterDto;
 import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.vo.UserVO;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
 * @author Lenovo
@@ -31,7 +34,7 @@ public interface UserService extends IService<User> {
      * @param userLoginDto
      * @return
      */
-    UserVO login(UserLoginDto userLoginDto);
+    UserVO login(UserLoginDto userLoginDto, HttpServletRequest request);
 
 
     /**
@@ -40,4 +43,16 @@ public interface UserService extends IService<User> {
      * @return
      */
     UserVO getUserVO(User user);
+
+    /**
+     * 获取当前登录用户的 ID
+     * @return
+     */
+    User getLoginUser();
+
+    /**
+     * 构造用户查询条件
+     */
+    QueryWrapper<User> getQueryWrapper(User user);
+
 }

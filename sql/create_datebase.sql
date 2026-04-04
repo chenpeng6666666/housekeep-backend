@@ -151,24 +151,30 @@ CREATE TABLE `employee_service_mapping`
 -- 订单主表
 CREATE TABLE `order`
 (
-    `id`                BIGINT         NOT NULL COMMENT '主键ID',
-    `order_no`          VARCHAR(50)    NOT NULL COMMENT '订单号',
-    `user_id`           BIGINT         NOT NULL COMMENT '用户ID',
-    `company_id`        BIGINT   DEFAULT NULL COMMENT '企业ID',
-    `employee_id`       BIGINT   DEFAULT NULL COMMENT '员工ID',
-    `service_item_id`   BIGINT         NOT NULL COMMENT '服务项ID',
-    `order_type`        TINYINT        NOT NULL COMMENT '类型 (1:自主, 2:智慧匹配)',
-    `service_address`   VARCHAR(255)   NOT NULL COMMENT '地址',
-    `target_lat`        DECIMAL(10, 6) NOT NULL COMMENT '经度',
-    `target_lng`        DECIMAL(10, 6) NOT NULL COMMENT '纬度',
-    `expect_start_time` DATETIME       NOT NULL COMMENT '预约开始时间',
-    `expect_end_time`   DATETIME       NOT NULL COMMENT '预约结束时间',
-    `total_amount`      DECIMAL(10, 2) NOT NULL COMMENT '总额',
-    `order_status`      TINYINT        NOT NULL COMMENT '状态',
-    `create_time`       DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`       DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `is_deleted`        TINYINT  DEFAULT 0 COMMENT '逻辑删除',
+    `id`              bigint         NOT NULL COMMENT '订单主键ID',
+    `order_no`        varchar(64)    NOT NULL COMMENT '订单流水号 (如：20260403xxx)',
+    `user_id`         bigint         NOT NULL COMMENT '下单用户ID',
+    `service_item_id` bigint         NOT NULL COMMENT '家政服务项目ID (比如：日常保洁)',
+
+    `address_id`      bigint                  DEFAULT NULL COMMENT '关联的地址库ID (原地址被删则为null)',
+    `contact_name`    varchar(50)    NOT NULL COMMENT '服务联系人 (快照)',
+    `contact_phone`   varchar(20)    NOT NULL COMMENT '联系电话 (快照)',
+    `service_address` varchar(255)   NOT NULL COMMENT '完整服务地址 (快照，省市区+详细地址)',
+
+    `book_time`       datetime       NOT NULL COMMENT '客户预约的上门服务时间',
+    `total_amount`    decimal(10, 2) NOT NULL COMMENT '订单总金额',
+    `pay_status`      tinyint(1)     NOT NULL DEFAULT '0' COMMENT '支付状态: 0-待支付, 1-已支付, 2-已退款',
+    `order_status`    tinyint(1)     NOT NULL DEFAULT '0' COMMENT '订单状态: 0-待接单, 1-已接单/进行中, 2-已完成, 3-已取消',
+
+    `worker_id`       bigint                  DEFAULT NULL COMMENT '接单的家政阿姨/员工ID',
+    `remark`          varchar(255)            DEFAULT NULL COMMENT '客户留言/备注',
+
+    `create_time`     datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '下单时间',
+    `update_time`     datetime       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `is_deleted`      tinyint(1)     NOT NULL DEFAULT '0' COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_order_no` (`order_no`)
+    UNIQUE KEY `uk_order_no` (`order_no`), -- 订单号必须唯一
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_worker_id` (`worker_id`)
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='订单主表';
+  DEFAULT CHARSET = utf8mb4 COMMENT ='家政服务订单表';

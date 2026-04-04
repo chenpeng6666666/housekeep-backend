@@ -1,6 +1,7 @@
 package com.itxc.housekeepbackend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.itxc.housekeepbackend.common.BaseContext;
@@ -15,6 +16,7 @@ import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 import static com.itxc.housekeepbackend.constant.UserConstant.PASSWORD_PRE;
@@ -56,24 +58,57 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserVO login(UserLoginDto userLoginDto) {
+    public UserVO login(UserLoginDto userLoginDto, HttpServletRequest request) {
         String phone = userLoginDto.getPhone();
         String password = userLoginDto.getPassword();
         // 1 查数据库账号判断密码是否一致
-        User oldUser = this.getOne(new QueryWrapper<User>()
+        User user = this.getOne(new QueryWrapper<User>()
                 .eq("phone", phone));
-        ThrowUtils.throwIf(oldUser == null, ErrorCode.OPERATION_ERROR,"用户不存在");
+        ThrowUtils.throwIf(user == null, ErrorCode.OPERATION_ERROR,"用户不存在");
         // 密码比对
-        boolean equals = oldUser.getPassword().equals(getEncryptPassword(password));
+        boolean equals = user.getPassword().equals(getEncryptPassword(password));
         ThrowUtils.throwIf(!equals, ErrorCode.OPERATION_ERROR,"密码错误");
-        BaseContext.setCurrentId(oldUser.getId());
         // 2 用户信息脱敏
-        return getUserVO(oldUser);
+        UserVO userVO = getUserVO(user);
+        request.getSession().setAttribute("userId", user.getId());
+        return userVO;
     }
 
     @Override
     public UserVO getUserVO(User user) {
         return BeanUtil.copyProperties(user, UserVO.class);
+    }
+
+    @Override
+    public User getLoginUser() {
+        Long userId = BaseContext.getCurrentId();
+        User user = this.getById(userId);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_LOGIN_ERROR,"用户未登录");
+        return user;
+    }
+
+    @Override
+    public QueryWrapper<User> getQueryWrapper(User user) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (user == null) {
+            return queryWrapper;
+        }
+        // 查询参数
+        Long id = user.getId();
+        String phone = user.getPhone();
+        String nickname = user.getNickname();
+        String password = user.getPassword();
+        Integer status = user.getStatus();
+        Date createTime = user.getCreateTime();
+
+        queryWrapper.eq(ObjUtil.isNotNull(id), "id", id);
+        queryWrapper.eq(ObjUtil.isNotNull(phone), "phone", phone);
+        queryWrapper.like(ObjUtil.isNotNull(nickname), "nickname", nickname);
+        queryWrapper.eq(ObjUtil.isNotNull(password), "password", password);
+        queryWrapper.eq(ObjUtil.isNotNull(status), "status", status);
+        // 排序
+        queryWrapper.orderBy(true, false, "create_time");
+        return queryWrapper;
     }
 
 

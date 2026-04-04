@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 /**
@@ -59,14 +60,14 @@ public class UserController {
      * 用户登录
      */
     @PostMapping("/login")
-    public BaseResponse<UserVO> login(@RequestBody UserLoginDto userLoginDto){
+    public BaseResponse<UserVO> login(@RequestBody UserLoginDto userLoginDto, HttpServletRequest request){
         String phone = userLoginDto.getPhone();
         String password = userLoginDto.getPassword();
         // 1 参数校验
         ThrowUtils.throwIf(StrUtil.isBlank(phone), ErrorCode.PARAMS_ERROR);
         ThrowUtils.throwIf(StrUtil.isBlank(password), ErrorCode.PARAMS_ERROR);
         // 2 登录方法
-        UserVO userVO = userService.login(userLoginDto);
+        UserVO userVO = userService.login(userLoginDto,request);
         return ResultUtils.success(userVO);
     }
 
