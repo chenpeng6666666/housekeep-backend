@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 
 /**
  * 普通用户表
- * @TableName user
  */
 @TableName(value ="user")
 @Data
