@@ -14,7 +14,8 @@ CREATE TABLE `sys_admin`
     `is_deleted`  TINYINT  DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='平台管理员表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='平台管理员表';
 
 -- 普通用户表
 CREATE TABLE `user`
@@ -32,7 +33,28 @@ CREATE TABLE `user`
     `is_deleted`      TINYINT        DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_phone` (`phone`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='普通用户表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='普通用户表';
+
+-- 创建用户地址表 (user_address)
+CREATE TABLE `user_address`
+(
+    `id`             bigint       NOT NULL COMMENT '主键ID',
+    `user_id`        bigint       NOT NULL COMMENT '所属用户ID',
+    `contact_name`   varchar(50)  NOT NULL COMMENT '联系人姓名',
+    `contact_phone`  varchar(20)  NOT NULL COMMENT '联系人电话',
+    `province`       varchar(50)           DEFAULT NULL COMMENT '省份',
+    `city`           varchar(50)           DEFAULT NULL COMMENT '城市',
+    `district`       varchar(50)           DEFAULT NULL COMMENT '区/县',
+    `detail_address` varchar(255) NOT NULL COMMENT '详细地址 (如小区、楼栋、门牌号)',
+    `is_default`     tinyint(1)   NOT NULL DEFAULT '0' COMMENT '是否默认地址 (0-否, 1-是)',
+    `create_time`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`    datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `is_deleted`     tinyint(1)   NOT NULL DEFAULT '0' COMMENT '逻辑删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`) -- 添加普通索引，加速根据用户ID查询地址列表
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='用户服务地址表';
 
 -- 家政企业信息表
 CREATE TABLE `company`
@@ -48,7 +70,8 @@ CREATE TABLE `company`
     `is_deleted`   TINYINT      DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_license_no` (`license_no`) -- 营业执照号全局唯一
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='家政企业实体表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='家政企业实体表';
 
 -- 企业员工表：承载管理员与普通员工角色
 CREATE TABLE `company_employee`
@@ -66,8 +89,9 @@ CREATE TABLE `company_employee`
     `is_deleted`  TINYINT              DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_phone` (`phone`),
-    KEY           `idx_company_id` (`company_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='企业员工与账号表';
+    KEY `idx_company_id` (`company_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='企业员工与账号表';
 
 
 -- ----------------------------
@@ -86,7 +110,8 @@ CREATE TABLE `service_category`
     `update_time`   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `is_deleted`    TINYINT  DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='服务分类表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='服务分类表';
 
 -- 企业服务条目表
 CREATE TABLE `service_item`
@@ -102,8 +127,9 @@ CREATE TABLE `service_item`
     `update_time` DATETIME    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `is_deleted`  TINYINT     DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
-    KEY           `idx_company_category` (`company_id`, `category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='企业服务条目表';
+    KEY `idx_company_category` (`company_id`, `category_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='企业服务条目表';
 
 -- 员工与服务关联表 (资质匹配)
 CREATE TABLE `employee_service_mapping`
@@ -114,7 +140,8 @@ CREATE TABLE `employee_service_mapping`
     `create_time`     DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_emp_service` (`employee_id`, `service_item_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='员工接单资质表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='员工接单资质表';
 
 
 -- ----------------------------
@@ -143,4 +170,5 @@ CREATE TABLE `order`
     `is_deleted`        TINYINT  DEFAULT 0 COMMENT '逻辑删除',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_order_no` (`order_no`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单主表';
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4 COMMENT ='订单主表';

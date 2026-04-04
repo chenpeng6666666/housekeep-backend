@@ -44,21 +44,6 @@ public class User implements Serializable {
     private String nickname;
 
     /**
-     * 默认服务地址
-     */
-    private String defaultAddress;
-
-    /**
-     * 默认纬度
-     */
-    private BigDecimal defaultLat;
-
-    /**
-     * 默认经度
-     */
-    private BigDecimal defaultLng;
-
-    /**
      * 状态 (1: 正常, 0: 禁用)
      */
     private Integer status;
@@ -98,9 +83,6 @@ public class User implements Serializable {
             && (this.getPhone() == null ? other.getPhone() == null : this.getPhone().equals(other.getPhone()))
             && (this.getPassword() == null ? other.getPassword() == null : this.getPassword().equals(other.getPassword()))
             && (this.getNickname() == null ? other.getNickname() == null : this.getNickname().equals(other.getNickname()))
-            && (this.getDefaultAddress() == null ? other.getDefaultAddress() == null : this.getDefaultAddress().equals(other.getDefaultAddress()))
-            && (this.getDefaultLat() == null ? other.getDefaultLat() == null : this.getDefaultLat().equals(other.getDefaultLat()))
-            && (this.getDefaultLng() == null ? other.getDefaultLng() == null : this.getDefaultLng().equals(other.getDefaultLng()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
             && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
@@ -115,9 +97,6 @@ public class User implements Serializable {
         result = prime * result + ((getPhone() == null) ? 0 : getPhone().hashCode());
         result = prime * result + ((getPassword() == null) ? 0 : getPassword().hashCode());
         result = prime * result + ((getNickname() == null) ? 0 : getNickname().hashCode());
-        result = prime * result + ((getDefaultAddress() == null) ? 0 : getDefaultAddress().hashCode());
-        result = prime * result + ((getDefaultLat() == null) ? 0 : getDefaultLat().hashCode());
-        result = prime * result + ((getDefaultLng() == null) ? 0 : getDefaultLng().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
@@ -135,9 +114,6 @@ public class User implements Serializable {
         sb.append(", phone=").append(phone);
         sb.append(", password=").append(password);
         sb.append(", nickname=").append(nickname);
-        sb.append(", defaultAddress=").append(defaultAddress);
-        sb.append(", defaultLat=").append(defaultLat);
-        sb.append(", defaultLng=").append(defaultLng);
         sb.append(", status=").append(status);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);

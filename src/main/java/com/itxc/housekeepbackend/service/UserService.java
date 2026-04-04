@@ -32,4 +32,12 @@ public interface UserService extends IService<User> {
      * @return
      */
     UserVO login(UserLoginDto userLoginDto);
+
+
+    /**
+     * 获取脱敏的用户信息
+     * @param user
+     * @return
+     */
+    UserVO getUserVO(User user);
 }

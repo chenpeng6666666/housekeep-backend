@@ -1,12 +1,17 @@
 package com.itxc.housekeepbackend.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.itxc.housekeepbackend.common.BaseContext;
 import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
 import com.itxc.housekeepbackend.exception.ErrorCode;
 import com.itxc.housekeepbackend.exception.ThrowUtils;
 import com.itxc.housekeepbackend.model.dto.user.UserLoginDto;
 import com.itxc.housekeepbackend.model.dto.user.UserRegisterDto;
+import com.itxc.housekeepbackend.model.dto.user.UserUpdateDto;
+import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.vo.UserVO;
 import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +37,6 @@ public class UserController {
 
     /**
      * 用户注册
-     * @param userRegisterDto
-     * @return
      */
     @PostMapping("/register")
     public BaseResponse<String> register(@RequestBody UserRegisterDto userRegisterDto){
@@ -51,6 +54,9 @@ public class UserController {
         return ResultUtils.success("注册成功");
     }
 
+    /**
+     * 用户登录
+     */
     @PostMapping("/login")
     public BaseResponse<UserVO> login(@RequestBody UserLoginDto userLoginDto){
         String phone = userLoginDto.getPhone();
@@ -62,6 +68,24 @@ public class UserController {
         UserVO userVO = userService.login(userLoginDto);
         return ResultUtils.success(userVO);
     }
+
+    /**
+     * 用户信息修改（普通用户）
+     */
+    @PostMapping("/update")
+    public BaseResponse<String> update(@RequestBody UserUpdateDto userUpdateDto){
+        // 1 参数校验
+        ThrowUtils.throwIf(ObjUtil.isEmpty(userUpdateDto), ErrorCode.PARAMS_ERROR, "用户信息不能为空");
+        User user = new User();
+        BeanUtil.copyProperties(userUpdateDto, user);
+        // 2 修改方法
+        boolean b = userService.updateById(user);
+        ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR, "修改失败");
+        return ResultUtils.success("修改成功");
+    }
+
+
+
 
 
 

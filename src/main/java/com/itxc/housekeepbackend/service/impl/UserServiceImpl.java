@@ -64,7 +64,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         ThrowUtils.throwIf(!equals, ErrorCode.OPERATION_ERROR,"密码错误");
         BaseContext.setCurrentId(oldUser.getId());
         // 2 用户信息脱敏
-        return BeanUtil.copyProperties(oldUser, UserVO.class);
+        return getUserVO(oldUser);
+    }
+
+    @Override
+    public UserVO getUserVO(User user) {
+        return BeanUtil.copyProperties(user, UserVO.class);
     }
 
 
