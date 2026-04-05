@@ -1,6 +1,6 @@
 package com.itxc.housekeepbackend.mapper;
 
-import com.itxc.housekeepbackend.model.entity.UserAddress;
+import com.itxc.housekeepbackend.model.entity.Address;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @createDate 2026-04-04 14:08:13
 * @Entity com.itxc.housekeepbackend.model.entity.UserAddress
 */
-public interface UserAddressMapper extends BaseMapper<UserAddress> {
+public interface UserAddressMapper extends BaseMapper<Address> {
 
 }
 

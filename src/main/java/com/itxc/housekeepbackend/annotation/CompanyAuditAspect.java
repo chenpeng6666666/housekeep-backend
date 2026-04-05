@@ -13,6 +13,9 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
+/**
+ * 拦截企业审核状态正常且管理员用户才能访问的接口
+ */
 @Aspect
 @Component
 public class CompanyAuditAspect {

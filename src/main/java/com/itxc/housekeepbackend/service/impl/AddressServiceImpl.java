@@ -11,9 +11,9 @@ import com.itxc.housekeepbackend.exception.ErrorCode;
 import com.itxc.housekeepbackend.exception.ThrowUtils;
 import com.itxc.housekeepbackend.mapper.UserAddressMapper;
 import com.itxc.housekeepbackend.model.dto.address.AddressDto;
+import com.itxc.housekeepbackend.model.entity.Address;
 import com.itxc.housekeepbackend.model.entity.User;
-import com.itxc.housekeepbackend.model.entity.UserAddress;
-import com.itxc.housekeepbackend.service.UserAddressService;
+import com.itxc.housekeepbackend.service.AddressService;
 import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -28,8 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 * @createDate 2026-04-04 14:08:13
 */
 @Service
-public class UserAddressServiceImpl extends ServiceImpl<UserAddressMapper, UserAddress>
-    implements UserAddressService {
+public class AddressServiceImpl extends ServiceImpl<UserAddressMapper, Address>
+    implements AddressService {
 
     @Resource
     private UserService userService;
@@ -55,14 +55,14 @@ public class UserAddressServiceImpl extends ServiceImpl<UserAddressMapper, UserA
 //        String district = addressDto.getDistrict();
 //        String detailAddress = addressDto.getDetailAddress();
 
-        UserAddress userAddress = new UserAddress();
+        Address userAddress = new Address();
         BeanUtil.copyProperties(addressDto, userAddress);
         userAddress.setUpdateTime(new Date());
         userAddress.setUserId(BaseContext.getCurrentId());
         // 2 判断当前方法是新增还是修改
         if (ObjUtil.isNull(id)){ // 新增
             // 2.1 查询当前用户是否存在地址 不存在此地址设为默认地址
-            boolean exists = this.exists(new QueryWrapper<UserAddress>()
+            boolean exists = this.exists(new QueryWrapper<Address>()
                     .eq("user_id", userAddress.getUserId()));
             if (!exists){
                 addressDto.setIsDefault(1);// 设置为默认地址
@@ -73,8 +73,8 @@ public class UserAddressServiceImpl extends ServiceImpl<UserAddressMapper, UserA
     }
 
     @Override
-    public QueryWrapper<UserAddress> getQueryWrapper(UserAddress userAddress) {
-        QueryWrapper<UserAddress> queryWrapper = new QueryWrapper<>();
+    public QueryWrapper<Address> getQueryWrapper(Address userAddress) {
+        QueryWrapper<Address> queryWrapper = new QueryWrapper<>();
         if (userAddress == null){
             return queryWrapper;
         }
@@ -107,11 +107,11 @@ public class UserAddressServiceImpl extends ServiceImpl<UserAddressMapper, UserA
     @Override
     public boolean setDefaultAddress(Long addressId) {
         // 1 查询用户原本的默认地址
-        UserAddress defaultAddress = this.getOne(new QueryWrapper<UserAddress>()
+        Address defaultAddress = this.getOne(new QueryWrapper<Address>()
                 .eq("user_id", BaseContext.getCurrentId())
                 .eq("is_default", 1));
         // 2 查询待修改的地址
-        UserAddress updateAddress = this.getOne(new QueryWrapper<UserAddress>()
+        Address updateAddress = this.getOne(new QueryWrapper<Address>()
                 .eq("id", addressId));
         // 3 修改用户原本的默认地址
         if (defaultAddress.equals(updateAddress)){

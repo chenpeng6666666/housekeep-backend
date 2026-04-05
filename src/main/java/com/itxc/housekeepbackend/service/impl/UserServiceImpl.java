@@ -11,6 +11,7 @@ import com.itxc.housekeepbackend.mapper.UserMapper;
 import com.itxc.housekeepbackend.model.dto.user.UserLoginDto;
 import com.itxc.housekeepbackend.model.dto.user.UserRegisterDto;
 import com.itxc.housekeepbackend.model.entity.User;
+import com.itxc.housekeepbackend.model.enums.RoleTypeEnum;
 import com.itxc.housekeepbackend.model.vo.UserVO;
 import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.stereotype.Service;
@@ -41,14 +42,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR,"当前手机账号已经注册");
         // 2 TODO 校验验证码是否一致 使用 redis 做验证码校验工具
 
-        // 3 MD5密码加密 加盐处理
         User user = new User();
         user.setNickname("用户_" + phone.substring(7)); // 默认昵称
         user.setPhone(phone);
+        // 3 MD5密码加密 加盐处理
         user.setPassword(getEncryptPassword(password));
         user.setCreateTime(new Date());
         user.setUpdateTime(new Date());
-        // 4 新增用户
+        // 4 新增用户 通过注册的用户角色均为 user
+        user.setRoleType(RoleTypeEnum.USER.getValue());
         this.save(user);
     }
 

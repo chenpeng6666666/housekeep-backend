@@ -5,22 +5,15 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
- * 普通用户表
+ * 用户服务地址表
  */
-@TableName(value ="user")
+@TableName(value ="address")
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class User implements Serializable {
-
+public class Address implements Serializable {
     /**
      * 主键ID
      */
@@ -28,29 +21,44 @@ public class User implements Serializable {
     private Long id;
 
     /**
-     * 手机号
+     * 所属用户ID
      */
-    private String phone;
+    private Long userId;
 
     /**
-     * 密码
+     * 联系人姓名
      */
-    private String password;
+    private String contactName;
 
     /**
-     * 用户昵称
+     * 联系人电话
      */
-    private String nickname;
+    private String contactPhone;
 
     /**
-     * 用户角色 (0: 普通用户, 1: 管理员)
+     * 省份
      */
-    private Integer roleType;
+    private String province;
 
     /**
-     * 状态 (1: 正常, 0: 禁用)
+     * 城市
      */
-    private Integer status;
+    private String city;
+
+    /**
+     * 区/县
+     */
+    private String district;
+
+    /**
+     * 详细地址 (如小区、楼栋、门牌号)
+     */
+    private String detailAddress;
+
+    /**
+     * 是否默认地址 (0-否, 1-是)
+     */
+    private Integer isDefault;
 
     /**
      * 创建时间
@@ -70,6 +78,4 @@ public class User implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
-
 }

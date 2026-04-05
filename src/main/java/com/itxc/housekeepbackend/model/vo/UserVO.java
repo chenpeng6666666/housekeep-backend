@@ -30,5 +30,10 @@ public class UserVO {
      */
     private String phone;
 
+    /**
+     * 用户角色
+     */
+    private Integer roleType;
+
 
 }
