@@ -34,8 +34,13 @@ public class LoginCheckFilter implements Filter {
 
         //定义不需要处理的请求路径 放行接口 TODO
         String[] urls = new String[]{
-                "/user/sendMsg",
-                "/api/user/login"
+                "/api/user/sendMsg",
+                "/api/user/login",
+                "/api/user/register",
+                "/api/company/sendMsg",
+                "/api/company/register",
+                "/api/company/login",
+                "/api/admin/login"
         };
 
         //2、判断本次请求是否需要处理
@@ -49,10 +54,10 @@ public class LoginCheckFilter implements Filter {
         }
 
         //4-1、判断后台员工登录状态，如果已登录，则直接放行
-        if(request.getSession().getAttribute("employee") != null){
-            log.info("用户已登录，用户id为：{}",request.getSession().getAttribute("employee"));
+        if(request.getSession().getAttribute("employeeId") != null){
+            log.info("用户已登录，用户id为：{}",request.getSession().getAttribute("employeeId"));
 
-            Long empId = (Long) request.getSession().getAttribute("employee");
+            Long empId = (Long) request.getSession().getAttribute("employeeId");
             BaseContext.setCurrentId(empId);
 
             filterChain.doFilter(request,response);

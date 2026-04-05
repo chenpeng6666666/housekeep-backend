@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itxc.housekeepbackend.mapper.CompanyEmployeeMapper">
+
+    <resultMap id="BaseResultMap" type="com.itxc.housekeepbackend.model.entity.CompanyEmployee">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="companyId" column="company_id" jdbcType="BIGINT"/>
+            <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+            <result property="phone" column="phone" jdbcType="VARCHAR"/>
+            <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="roleType" column="role_type" jdbcType="TINYINT"/>
+            <result property="workStatus" column="work_status" jdbcType="TINYINT"/>
+            <result property="rating" column="rating" jdbcType="DECIMAL"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,company_id,real_name,
+        phone,password,role_type,
+        work_status,rating,create_time,
+        update_time,is_deleted
+    </sql>
+</mapper>

@@ -39,7 +39,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         boolean exists = this.exists(new QueryWrapper<User>()
                 .eq("phone", phone));
         ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR,"当前手机账号已经注册");
-        // 2 TODO 校验验证码是否一致
+        // 2 TODO 校验验证码是否一致 使用 redis 做验证码校验工具
 
         // 3 MD5密码加密 加盐处理
         User user = new User();

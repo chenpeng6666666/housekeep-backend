@@ -56,22 +56,29 @@ CREATE TABLE `user_address`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT ='用户服务地址表';
 
--- 家政企业信息表
-CREATE TABLE `company`
+-- 1. 创建企业信息表
+CREATE TABLE `company_info`
 (
-    `id`           BIGINT       NOT NULL COMMENT '主键ID',
-    `company_name` VARCHAR(100) NOT NULL COMMENT '企业名称',
-    `license_no`   VARCHAR(50)  DEFAULT NULL COMMENT '营业执照注册号/统一社会信用代码',
-    `license_pic`  VARCHAR(255) DEFAULT NULL COMMENT '营业执照图片地址/URL',
-    `credit_score` INT          DEFAULT 100 COMMENT '企业信用分',
-    `status`       TINYINT      DEFAULT 0 COMMENT '状态 (0: 待审核, 1: 营业中, 2: 审核驳回)',
-    `create_time`  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `is_deleted`   TINYINT      DEFAULT 0 COMMENT '逻辑删除',
+    `id`            bigint       NOT NULL COMMENT '企业主键ID',
+    `admin_id`      bigint       NOT NULL COMMENT '关联的企业管理员账号ID (对应 user 表)',
+    `company_name`  varchar(100) NOT NULL COMMENT '企业名称',
+    `license_no`    varchar(50)  NOT NULL COMMENT '统一社会信用代码/营业执照号',
+    `contact_name`  varchar(50)  NOT NULL COMMENT '企业联系人',
+    `contact_phone` varchar(20)  NOT NULL COMMENT '联系电话',
+    `address`       varchar(255)          DEFAULT NULL COMMENT '企业详细地址',
+
+    -- ==== 核心状态流转字段 ====
+    `audit_status`  tinyint(1)   NOT NULL DEFAULT '0' COMMENT '审核状态: 0-待审核, 1-审核通过, 2-审核驳回',
+    `reject_reason` varchar(255)          DEFAULT NULL COMMENT '驳回原因 (当审核驳回时展示给企业看)',
+
+    `create_time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `is_deleted`    tinyint(1)   NOT NULL DEFAULT '0',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_license_no` (`license_no`) -- 营业执照号全局唯一
+    UNIQUE KEY `uk_license_no` (`license_no`), -- 营业执照必须全局唯一
+    UNIQUE KEY `uk_admin_id` (`admin_id`)      -- 一个账号只能绑定一家企业
 ) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4 COMMENT ='家政企业实体表';
+  DEFAULT CHARSET = utf8mb4 COMMENT ='企业信息表';
 
 -- 企业员工表：承载管理员与普通员工角色
 CREATE TABLE `company_employee`
