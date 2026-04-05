@@ -1,11 +1,9 @@
 package com.itxc.housekeepbackend.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itxc.housekeepbackend.model.dto.companyEmployee.CompanyEmployeeLoginDto;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
 import com.itxc.housekeepbackend.model.entity.Company;
-import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
 import com.itxc.housekeepbackend.model.vo.CompanyEmployeeLoginVO;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,4 +35,10 @@ public interface CompanyService extends IService<Company> {
     String getEncryptPassword(String password);
 
 
+    /**
+     * 更新企业信息
+     * @param company
+     * @return
+     */
+    boolean updateCompany(Company company);
 }

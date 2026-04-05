@@ -7,11 +7,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.itxc.housekeepbackend.common.BaseContext;
 import com.itxc.housekeepbackend.exception.BusinessException;
 import com.itxc.housekeepbackend.exception.ErrorCode;
+import com.itxc.housekeepbackend.exception.ThrowUtils;
+import com.itxc.housekeepbackend.mapper.EmployeeMapper;
 import com.itxc.housekeepbackend.model.dto.company.EmployeeQueryRequest;
-import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
-import com.itxc.housekeepbackend.mapper.CompanyEmployeeMapper;
-import com.itxc.housekeepbackend.service.CompanyEmployeeService;
+import com.itxc.housekeepbackend.model.entity.Employee;
+import com.itxc.housekeepbackend.service.EmployeeService;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * @author Lenovo
@@ -19,18 +22,18 @@ import org.springframework.stereotype.Service;
  * @createDate 2026-04-04 17:36:14
  */
 @Service
-public class CompanyEmployeeServiceImpl extends ServiceImpl<CompanyEmployeeMapper, CompanyEmployee>
-        implements CompanyEmployeeService {
+public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee>
+        implements EmployeeService {
 
     @Override
-    public QueryWrapper<CompanyEmployee> getQueryWrapper(EmployeeQueryRequest employeeQueryRequest) {
+    public QueryWrapper<Employee> getQueryWrapper(EmployeeQueryRequest employeeQueryRequest) {
         Long employeeId = BaseContext.getCurrentId();
-        CompanyEmployee employee = this.getById(employeeId);
+        Employee employee = this.getById(employeeId);
         if (employee.getCompanyId() == null) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "当前用户未绑定企业");
         }
 
-        QueryWrapper<CompanyEmployee> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<Employee> queryWrapper = new QueryWrapper<>();
         // 获取查询参数
         Long id = employeeQueryRequest.getId();
         String realName = employeeQueryRequest.getRealName();
@@ -45,8 +48,24 @@ public class CompanyEmployeeServiceImpl extends ServiceImpl<CompanyEmployeeMappe
         // 仅能查询本企业的员工列表
         queryWrapper.eq("company_id", employee.getCompanyId());
         // 排序
-        queryWrapper.orderByDesc("creatTime");
+        queryWrapper.orderByDesc("create_time");
         return queryWrapper;
+    }
+
+    @Override
+    public boolean saveOrUpdateEmployee(Employee employee) {
+        ThrowUtils.throwIf(ObjUtil.isNull(employee), ErrorCode.PARAMS_ERROR);
+        Long id = employee.getId();
+        Long adminId = BaseContext.getCurrentId();
+        Employee admin = this.getById(adminId);
+
+        if (id == null){// 新增
+            // 设置当前企业id
+            employee.setCompanyId(admin.getCompanyId());
+            employee.setCreateTime(new Date());
+        }
+        employee.setUpdateTime(new Date());
+        return this.saveOrUpdate(employee);
     }
 }
 

@@ -5,11 +5,11 @@ import lombok.Data;
 /**
  * @author Xy
  * @version 1.0
- * @description:  业用户登录后的信息
+ * @description:  企业用户登录后的信息
  * @date 2026/4/5 12:45
  */
 @Data
-public class CompanyEmployeeVO {
+public class EmployeeVO {
 
     /**
      * 员工姓名

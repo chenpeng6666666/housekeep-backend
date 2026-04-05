@@ -10,9 +10,9 @@ import java.util.Date;
 /**
  * 企业员工与账号表
  */
-@TableName(value ="company_employee")
+@TableName(value ="employee")
 @Data
-public class CompanyEmployee implements Serializable {
+public class Employee implements Serializable {
     /**
      * 主键ID
      */
@@ -84,7 +84,7 @@ public class CompanyEmployee implements Serializable {
         if (getClass() != that.getClass()) {
             return false;
         }
-        CompanyEmployee other = (CompanyEmployee) that;
+        Employee other = (Employee) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
             && (this.getCompanyId() == null ? other.getCompanyId() == null : this.getCompanyId().equals(other.getCompanyId()))
             && (this.getRealName() == null ? other.getRealName() == null : this.getRealName().equals(other.getRealName()))

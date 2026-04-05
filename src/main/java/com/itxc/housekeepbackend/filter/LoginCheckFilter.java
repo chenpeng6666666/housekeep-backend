@@ -37,10 +37,25 @@ public class LoginCheckFilter implements Filter {
                 "/api/user/sendMsg",
                 "/api/user/login",
                 "/api/user/register",
+
                 "/api/company/sendMsg",
                 "/api/company/register",
                 "/api/company/login",
-                "/api/admin/login"
+
+                "/api/admin/login",
+
+                "/api/doc.html",
+                "/api/webjars/**",
+                "/api/swagger-resources/**",
+                "/api/v2/api-docs/**",
+                "/api/v3/api-docs/**",
+                "/api/favicon.ico",
+                "/doc.html",
+                "/webjars/**",
+                "/swagger-resources/**",
+                "/v2/api-docs/**",
+                "/v3/api-docs/**",
+
         };
 
         //2、判断本次请求是否需要处理

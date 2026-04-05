@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.itxc.housekeepbackend.mapper.CompanyEmployeeMapper">
 
-    <resultMap id="BaseResultMap" type="com.itxc.housekeepbackend.model.entity.CompanyEmployee">
+    <resultMap id="BaseResultMap" type="com.itxc.housekeepbackend.model.entity.Employee">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="companyId" column="company_id" jdbcType="BIGINT"/>
             <result property="realName" column="real_name" jdbcType="VARCHAR"/>

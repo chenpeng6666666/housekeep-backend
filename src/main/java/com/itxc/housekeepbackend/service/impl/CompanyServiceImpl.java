@@ -12,10 +12,10 @@ import com.itxc.housekeepbackend.mapper.CompanyMapper;
 import com.itxc.housekeepbackend.model.dto.companyEmployee.CompanyEmployeeLoginDto;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
 import com.itxc.housekeepbackend.model.entity.Company;
-import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
+import com.itxc.housekeepbackend.model.entity.Employee;
 import com.itxc.housekeepbackend.model.vo.CompanyEmployeeLoginVO;
-import com.itxc.housekeepbackend.service.CompanyEmployeeService;
 import com.itxc.housekeepbackend.service.CompanyService;
+import com.itxc.housekeepbackend.service.EmployeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.DigestUtils;
@@ -23,6 +23,9 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Date;
+
+import static com.itxc.housekeepbackend.constant.CompanyConstant.AUDIT_STATUS_WAIT;
 import static com.itxc.housekeepbackend.constant.UserConstant.PASSWORD_PRE;
 
 /**
@@ -35,7 +38,7 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company>
     implements CompanyService {
 
     @Resource
-    private CompanyEmployeeService companyEmployeeService;
+    private EmployeeService employeeService;
 
     @Resource
     private TransactionTemplate transactionTemplate;
@@ -49,8 +52,8 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company>
         ThrowUtils.throwIf(b, ErrorCode.PARAMS_ERROR, "该营业执照号已被注册");
 
         // 2. 校验管理员手机号是否已被使用 (注意：现在是去 employee 表查)
-        b = companyEmployeeService.exists(
-                new QueryWrapper<CompanyEmployee>().eq("phone", dto.getAdminPhone())
+        b = employeeService.exists(
+                new QueryWrapper<Employee>().eq("phone", dto.getAdminPhone())
         );
         ThrowUtils.throwIf(b, ErrorCode.PARAMS_ERROR, "该手机号已被注册为企业员工/管理员");
 
@@ -65,8 +68,8 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company>
         companyInfo.setAdminId(adminId);        // 绑定预生成的管理员 ID
         companyInfo.setContactPhone(dto.getAdminPhone());
         companyInfo.setAuditStatus(0);          // 0: 待审核状态
-        // 5. 构建企业超级管理员账号 (CompanyEmployee)
-        CompanyEmployee adminEmp = new CompanyEmployee();
+        // 5. 构建企业超级管理员账号 (Employee)
+        Employee adminEmp = new Employee();
         adminEmp.setId(adminId);                // 塞入预生成的员工 ID
         adminEmp.setCompanyId(companyId);       // 绑定预生成的企业 ID
         adminEmp.setPhone(dto.getAdminPhone());
@@ -77,7 +80,7 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company>
         // 6. 统一执行插入数据库操作 (如果其中一个报错 事务会全部回滚)
         Boolean execute = transactionTemplate.execute(status -> {
             this.save(companyInfo);
-            companyEmployeeService.save(adminEmp);
+            employeeService.save(adminEmp);
             return true;
         });
         return true;
@@ -90,7 +93,7 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company>
         String password = companyEmployeeLoginDto.getPassword();
         ThrowUtils.throwIf(phone == null || password == null, ErrorCode.PARAMS_ERROR,"手机号或密码不能为空");
         // 2 查询账号
-        CompanyEmployee employee = companyEmployeeService.getOne(new QueryWrapper<CompanyEmployee>()
+        Employee employee = employeeService.getOne(new QueryWrapper<Employee>()
                 .eq("phone", phone));
         ThrowUtils.throwIf(employee == null, ErrorCode.PARAMS_ERROR, "账号不存在");
         Long companyId = employee.getCompanyId();
@@ -114,6 +117,19 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company>
     @Override
     public String getEncryptPassword(String password) {
         return DigestUtils.md5DigestAsHex((PASSWORD_PRE + password).getBytes());
+    }
+
+    @Override
+    public boolean updateCompany(Company company) {
+        // 1 参数校验
+        Long id = company.getId();
+        ThrowUtils.throwIf(id == null, ErrorCode.PARAMS_ERROR);
+        // 2 补充参数
+        company.setUpdateTime(new Date());
+        company.setAuditStatus(AUDIT_STATUS_WAIT);
+
+        // 执行更新
+        return this.updateById(company);
     }
 
 

@@ -1,18 +1,23 @@
 package com.itxc.housekeepbackend.controller;
 
 import cn.hutool.core.util.ObjUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.itxc.housekeepbackend.annotation.CheckCompanyAuditAndAdmin;
+import com.itxc.housekeepbackend.common.BaseContext;
 import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
+import com.itxc.housekeepbackend.constant.EmployeeConstant;
 import com.itxc.housekeepbackend.exception.ErrorCode;
 import com.itxc.housekeepbackend.exception.ThrowUtils;
 import com.itxc.housekeepbackend.model.dto.company.EmployeeQueryRequest;
 import com.itxc.housekeepbackend.model.dto.companyEmployee.CompanyEmployeeLoginDto;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
-import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
+import com.itxc.housekeepbackend.model.entity.Company;
+import com.itxc.housekeepbackend.model.entity.Employee;
 import com.itxc.housekeepbackend.model.vo.CompanyEmployeeLoginVO;
-import com.itxc.housekeepbackend.service.CompanyEmployeeService;
 import com.itxc.housekeepbackend.service.CompanyService;
+import com.itxc.housekeepbackend.service.EmployeeService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -32,7 +37,7 @@ public class CompanyController {
     private CompanyService companyService;
 
     @Resource
-    private CompanyEmployeeService companyEmployeeService;
+    private EmployeeService employeeService;
 
     /**
      * 企业入驻
@@ -55,15 +60,44 @@ public class CompanyController {
     }
 
     /**
+     * 根据用户id查询企业信息
+     */
+    @GetMapping
+    public BaseResponse<Company> getCompanyInfo(){
+        Long employeeId = BaseContext.getCurrentId();
+        Employee employee = employeeService.getById(employeeId);
+        Company company = companyService.getOne(new QueryWrapper<Company>()
+                .eq("id", employee.getCompanyId()));
+        // TODO 判断员工角色 非管理员用户需要脱敏 暂时不处理
+        return ResultUtils.success(company);
+    }
+
+    /**
+     * 企业信息修改(请求参数必须包含id)
+     */
+    @PostMapping()
+    @CheckCompanyAuditAndAdmin
+    public BaseResponse<String> updateCompany(@RequestBody Company company){
+        // 参数校验
+        ThrowUtils.throwIf(ObjUtil.isNull(company), ErrorCode.PARAMS_ERROR);
+        boolean b = companyService.updateCompany(company);
+        ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR,"企业信息修改失败");
+        return ResultUtils.success("企业信息已修改，待审核");
+
+    }
+
+    /**
      * 企业员工信息分页查询 (仅仅企业管理员可用)
      */
     @GetMapping("/employee/page")
-    public BaseResponse<Page<CompanyEmployee>> queryEmployeePage(EmployeeQueryRequest request){
+    @CheckCompanyAuditAndAdmin
+    public BaseResponse<Page<Employee>> queryEmployeePage(EmployeeQueryRequest request){
         // 参数校验
         ThrowUtils.throwIf(ObjUtil.isNull(request), ErrorCode.PARAMS_ERROR);
         int current = request.getCurrent();
         int pageSize = request.getPageSize();
-        Page<CompanyEmployee> page = companyEmployeeService.page(new Page<>(current, pageSize), companyEmployeeService.getQueryWrapper(request));
+        Page<Employee> page = employeeService.page(new Page<>(current, pageSize), employeeService.getQueryWrapper(request));
+
         return ResultUtils.success(page);
     }
 
@@ -71,16 +105,23 @@ public class CompanyController {
      * 新增企业员工
      */
     @PostMapping("/employee")
-    public BaseResponse<Long> addEmployee(@RequestBody CompanyEmployee companyEmployee){
-        ThrowUtils.throwIf(ObjUtil.isNull(companyEmployee), ErrorCode.PARAMS_ERROR);
-        return null;
+    @CheckCompanyAuditAndAdmin
+    public BaseResponse<Boolean> addEmployee(@RequestBody Employee employee){
+        ThrowUtils.throwIf(ObjUtil.isNull(employee), ErrorCode.PARAMS_ERROR);
+        boolean b = employeeService.saveOrUpdateEmployee(employee);
+        return ResultUtils.success(b);
     }
 
-
-
-
-
-
+    /**
+     * 企业员工信息修改
+     */
+    @PutMapping("/employee")
+    @CheckCompanyAuditAndAdmin
+    public BaseResponse<Boolean> updateEmployee(@RequestBody Employee employee){
+        ThrowUtils.throwIf(ObjUtil.isNull(employee), ErrorCode.PARAMS_ERROR);
+        boolean b = employeeService.saveOrUpdateEmployee(employee);
+        return ResultUtils.success(b);
+    }
 
 
 

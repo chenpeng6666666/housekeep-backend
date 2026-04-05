@@ -3,7 +3,7 @@ package com.itxc.housekeepbackend.model.vo;
 import lombok.Data;
 
 /**
- * 企业用户脱敏信息
+ * 企业用户脱敏登录后的信息
  */
 @Data
 public class CompanyEmployeeLoginVO {
