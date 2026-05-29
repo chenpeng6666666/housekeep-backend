@@ -1,7 +1,6 @@
 package com.itxc.housekeepbackend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.itxc.housekeepbackend.model.entity.Employee;
 
 /**
 * @author Lenovo

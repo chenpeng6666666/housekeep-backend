@@ -2,23 +2,23 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.itxc.housekeepbackend.mapper.ServiceCategoryMapper">
+<mapper namespace="com.itxc.housekeepbackend.mapper.SysAdminMapper">
 
-    <resultMap id="BaseResultMap" type="com.itxc.housekeepbackend.model.entity.ServiceCategory">
+    <resultMap id="BaseResultMap" type="com.itxc.housekeepbackend.model.entity.SysAdmin">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="name" column="name" jdbcType="VARCHAR"/>
-            <result property="icon" column="icon" jdbcType="VARCHAR"/>
-            <result property="sort" column="sort" jdbcType="INTEGER"/>
+            <result property="username" column="username" jdbcType="VARCHAR"/>
+            <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+            <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
             <result property="status" column="status" jdbcType="TINYINT"/>
-            <result property="description" column="description" jdbcType="LONGVARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, name, icon,
-        sort, status, description,
-        create_time, update_time, is_deleted
+        id,username,password,
+        real_name,avatar,status,
+        create_time,update_time,is_deleted
     </sql>
 </mapper>

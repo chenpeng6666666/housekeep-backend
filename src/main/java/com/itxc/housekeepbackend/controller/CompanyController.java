@@ -7,17 +7,16 @@ import com.itxc.housekeepbackend.annotation.CheckCompanyAuditAndAdmin;
 import com.itxc.housekeepbackend.common.BaseContext;
 import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
-import com.itxc.housekeepbackend.constant.EmployeeConstant;
 import com.itxc.housekeepbackend.exception.ErrorCode;
 import com.itxc.housekeepbackend.exception.ThrowUtils;
 import com.itxc.housekeepbackend.model.dto.company.EmployeeQueryRequest;
 import com.itxc.housekeepbackend.model.dto.companyEmployee.CompanyEmployeeLoginDto;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
 import com.itxc.housekeepbackend.model.entity.Company;
-import com.itxc.housekeepbackend.model.entity.Employee;
+import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
 import com.itxc.housekeepbackend.model.vo.CompanyEmployeeLoginVO;
+import com.itxc.housekeepbackend.service.CompanyEmployeeService;
 import com.itxc.housekeepbackend.service.CompanyService;
-import com.itxc.housekeepbackend.service.EmployeeService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -37,7 +36,7 @@ public class CompanyController {
     private CompanyService companyService;
 
     @Resource
-    private EmployeeService employeeService;
+    private CompanyEmployeeService companyEmployeeService;
 
     /**
      * 企业入驻
@@ -46,7 +45,8 @@ public class CompanyController {
     public boolean registerCompany(@RequestBody CompanyRegisterDto dto){
         // 参数校验
         ThrowUtils.throwIf(ObjUtil.isEmpty(dto), ErrorCode.PARAMS_ERROR);
-        return companyService.registerCompany(dto);
+//        return companyService.registerCompany(dto);
+        return true;
     }
 
     /**
@@ -55,8 +55,8 @@ public class CompanyController {
     @PostMapping("/login")
     public BaseResponse<CompanyEmployeeLoginVO> companyLogin(@RequestBody CompanyEmployeeLoginDto companyEmployeeLoginDto, HttpServletRequest request){
         ThrowUtils.throwIf(ObjUtil.isNull(companyEmployeeLoginDto), ErrorCode.PARAMS_ERROR);
-        CompanyEmployeeLoginVO companyLoginVO = companyService.login(companyEmployeeLoginDto,request);
-        return ResultUtils.success(companyLoginVO);
+//        CompanyEmployeeLoginVO companyLoginVO = companyService.login(companyEmployeeLoginDto,request);
+        return ResultUtils.success(null);
     }
 
     /**
@@ -65,7 +65,7 @@ public class CompanyController {
     @GetMapping
     public BaseResponse<Company> getCompanyInfo(){
         Long employeeId = BaseContext.getCurrentId();
-        Employee employee = employeeService.getById(employeeId);
+        CompanyEmployee employee = companyEmployeeService.getById(employeeId);
         Company company = companyService.getOne(new QueryWrapper<Company>()
                 .eq("id", employee.getCompanyId()));
         // TODO 判断员工角色 非管理员用户需要脱敏 暂时不处理
@@ -80,8 +80,8 @@ public class CompanyController {
     public BaseResponse<String> updateCompany(@RequestBody Company company){
         // 参数校验
         ThrowUtils.throwIf(ObjUtil.isNull(company), ErrorCode.PARAMS_ERROR);
-        boolean b = companyService.updateCompany(company);
-        ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR,"企业信息修改失败");
+//        boolean b = companyService.updateCompany(company);
+        ThrowUtils.throwIf(true, ErrorCode.OPERATION_ERROR,"企业信息修改失败");
         return ResultUtils.success("企业信息已修改，待审核");
 
     }
@@ -91,14 +91,14 @@ public class CompanyController {
      */
     @GetMapping("/employee/page")
     @CheckCompanyAuditAndAdmin
-    public BaseResponse<Page<Employee>> queryEmployeePage(EmployeeQueryRequest request){
+    public BaseResponse<Page<CompanyEmployee>> queryEmployeePage(EmployeeQueryRequest request){
         // 参数校验
         ThrowUtils.throwIf(ObjUtil.isNull(request), ErrorCode.PARAMS_ERROR);
         int current = request.getCurrent();
         int pageSize = request.getPageSize();
-        Page<Employee> page = employeeService.page(new Page<>(current, pageSize), employeeService.getQueryWrapper(request));
+//        Page<CompanyEmployee> page = companyEmployeeService.page(new Page<>(current, pageSize), companyEmployeeService.getQueryWrapper(request));
 
-        return ResultUtils.success(page);
+        return ResultUtils.success(new Page<CompanyEmployee>());
     }
 
     /**
@@ -106,10 +106,10 @@ public class CompanyController {
      */
     @PostMapping("/employee")
     @CheckCompanyAuditAndAdmin
-    public BaseResponse<Boolean> addEmployee(@RequestBody Employee employee){
+    public BaseResponse<Boolean> addEmployee(@RequestBody CompanyEmployee employee){
         ThrowUtils.throwIf(ObjUtil.isNull(employee), ErrorCode.PARAMS_ERROR);
-        boolean b = employeeService.saveOrUpdateEmployee(employee);
-        return ResultUtils.success(b);
+//        boolean b = companyEmployeeService.saveOrUpdateEmployee(employee);
+        return ResultUtils.success(null);
     }
 
     /**
@@ -117,10 +117,10 @@ public class CompanyController {
      */
     @PutMapping("/employee")
     @CheckCompanyAuditAndAdmin
-    public BaseResponse<Boolean> updateEmployee(@RequestBody Employee employee){
+    public BaseResponse<Boolean> updateEmployee(@RequestBody CompanyEmployee employee){
         ThrowUtils.throwIf(ObjUtil.isNull(employee), ErrorCode.PARAMS_ERROR);
-        boolean b = employeeService.saveOrUpdateEmployee(employee);
-        return ResultUtils.success(b);
+//        boolean b = companyEmployeeService.saveOrUpdateEmployee(employee);
+        return ResultUtils.success(null);
     }
 
 

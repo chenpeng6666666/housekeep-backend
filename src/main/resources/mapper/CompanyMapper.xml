@@ -6,23 +6,25 @@
 
     <resultMap id="BaseResultMap" type="com.itxc.housekeepbackend.model.entity.Company">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="adminId" column="admin_id" jdbcType="BIGINT"/>
             <result property="companyName" column="company_name" jdbcType="VARCHAR"/>
             <result property="licenseNo" column="license_no" jdbcType="VARCHAR"/>
-            <result property="contactName" column="contact_name" jdbcType="VARCHAR"/>
-            <result property="contactPhone" column="contact_phone" jdbcType="VARCHAR"/>
+            <result property="legalPerson" column="legal_person" jdbcType="VARCHAR"/>
+            <result property="companyType" column="company_type" jdbcType="VARCHAR"/>
+            <result property="scale" column="scale" jdbcType="VARCHAR"/>
             <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="businessLicenseImg" column="business_license_img" jdbcType="VARCHAR"/>
+            <result property="logo" column="logo" jdbcType="VARCHAR"/>
             <result property="auditStatus" column="audit_status" jdbcType="TINYINT"/>
-            <result property="rejectReason" column="reject_reason" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,admin_id,company_name,
-        license_no,contact_name,contact_phone,
-        address,audit_status,reject_reason,
-        create_time,update_time,is_deleted
+        id,company_name,license_no,
+        legal_person,company_type,scale,
+        address,business_license_img,logo,
+        audit_status,create_time,update_time,
+        is_deleted
     </sql>
 </mapper>

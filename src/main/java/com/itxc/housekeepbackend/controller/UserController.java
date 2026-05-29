@@ -3,7 +3,6 @@ package com.itxc.housekeepbackend.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
-import com.itxc.housekeepbackend.common.BaseContext;
 import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
 import com.itxc.housekeepbackend.exception.ErrorCode;
@@ -14,10 +13,7 @@ import com.itxc.housekeepbackend.model.dto.user.UserUpdateDto;
 import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.vo.UserVO;
 import com.itxc.housekeepbackend.service.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -43,15 +39,15 @@ public class UserController {
     public BaseResponse<String> register(@RequestBody UserRegisterDto userRegisterDto){
         String phone = userRegisterDto.getPhone();
         String password = userRegisterDto.getPassword();
+        // TODO 验证码
         String code = userRegisterDto.getCode();
         // 1 参数校验
         ThrowUtils.throwIf(StrUtil.isBlank(phone), ErrorCode.PARAMS_ERROR);
         ThrowUtils.throwIf(StrUtil.isBlank(password), ErrorCode.PARAMS_ERROR);
-        //ThrowUtils.throwIf(StrUtil.isBlank(code), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(code), ErrorCode.PARAMS_ERROR);
+
         // 2 注册方法
         userService.register(userRegisterDto);
-        // 3 TODO 注册完直接登录
-
         return ResultUtils.success("注册成功");
     }
 
@@ -86,8 +82,21 @@ public class UserController {
         return ResultUtils.success("修改成功");
     }
 
-
-
+    /**
+     * 删除用户(仅平台管理员)
+     */
+    @DeleteMapping
+    public BaseResponse<String> delete(@RequestBody String userId) {
+        // 1 请求参数校验
+        ThrowUtils.throwIf(StrUtil.isBlank(userId), ErrorCode.PARAMS_ERROR);
+        // 2 查询数据库判断用户是否存在
+        User user = userService.getById(userId);
+        ThrowUtils.throwIf(ObjUtil.isNull(user), ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+        // 3 删除用户
+        boolean b = userService.removeById(userId);
+        ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR, "删除失败");
+        return ResultUtils.success("删除成功");
+    }
 
 
 

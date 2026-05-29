@@ -14,12 +14,15 @@ import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.enums.RoleTypeEnum;
 import com.itxc.housekeepbackend.model.vo.UserVO;
 import com.itxc.housekeepbackend.service.UserService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
+import static com.itxc.housekeepbackend.constant.RedisConstants.REGISTER_CODE_KEY;
 import static com.itxc.housekeepbackend.constant.UserConstant.PASSWORD_PRE;
 
 /**
@@ -31,6 +34,9 @@ import static com.itxc.housekeepbackend.constant.UserConstant.PASSWORD_PRE;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService {
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     @Override
     public void register(UserRegisterDto userRegisterDto) {
         String phone = userRegisterDto.getPhone();
@@ -40,7 +46,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         boolean exists = this.exists(new QueryWrapper<User>()
                 .eq("phone", phone));
         ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR,"当前手机账号已经注册");
-        // 2 TODO 校验验证码是否一致 使用 redis 做验证码校验工具
+        // 2 校验验证码是否一致 使用 redis 做验证码校验工具
+        String code2 = stringRedisTemplate.opsForValue().get(REGISTER_CODE_KEY + phone);
+        assert code2 != null;
+        ThrowUtils.throwIf(!code2.equals(code), ErrorCode.OPERATION_ERROR,"验证码错误");
 
         User user = new User();
         user.setNickname("用户_" + phone.substring(7)); // 默认昵称
@@ -72,7 +81,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         ThrowUtils.throwIf(!equals, ErrorCode.OPERATION_ERROR,"密码错误");
         // 2 用户信息脱敏
         UserVO userVO = getUserVO(user);
-        request.getSession().setAttribute("userId", user.getId());
+        // 5.1 强制销毁当前浏览器可能残留的旧 Session (极其重要！防止你先登录了企业端，又登录管理端导致的串号)
+        request.getSession().invalidate();
+
+        // 5.2 创建一个崭新的 Session，并将管理员ID存入 Session 中！(注意是 getSession().setAttribute)
+        request.getSession(true).setAttribute("userId", userVO.getId());
         return userVO;
     }
 

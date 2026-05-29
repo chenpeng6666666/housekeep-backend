@@ -2,25 +2,19 @@ package com.itxc.housekeepbackend.model.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
- * 普通用户表
+ * 企业服务条目表
+ * @TableName service_item
  */
-@TableName(value ="user")
+@TableName(value ="service_item")
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class User implements Serializable {
-
+public class ServiceItem implements Serializable {
     /**
      * 主键ID
      */
@@ -28,29 +22,34 @@ public class User implements Serializable {
     private Long id;
 
     /**
-     * 手机号
+     * 归属企业ID
      */
-    private String phone;
+    private Long companyId;
 
     /**
-     * 密码
+     * 关联分类ID
      */
-    private String password;
+    private Long categoryId;
 
     /**
-     * 用户昵称
+     * 服务名称
      */
-    private String nickname;
+    private String itemName;
 
     /**
-     * 用户角色 (0: 普通用户, 1: VIP用户 )
+     * 单价
      */
-    private Integer roleType;
+    private BigDecimal price;
 
     /**
-     * 状态 (1: 正常, 0: 禁用)
+     * 单位
      */
-    private Integer status;
+    private String unit;
+
+    /**
+     * 预计耗时(分钟)
+     */
+    private Integer duration;
 
     /**
      * 创建时间
@@ -65,11 +64,8 @@ public class User implements Serializable {
     /**
      * 逻辑删除
      */
-    @TableLogic
     private Integer isDeleted;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
-
 }

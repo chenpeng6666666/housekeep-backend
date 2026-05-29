@@ -1,13 +1,15 @@
 package com.itxc.housekeepbackend.model.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-import lombok.Data;
-
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
+import lombok.Data;
 
 /**
  * 企业信息表
+ * @TableName company
  */
 @TableName(value ="company")
 @Data
@@ -15,33 +17,33 @@ public class Company implements Serializable {
     /**
      * 企业主键ID
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId
     private Long id;
 
     /**
-     * 关联的企业管理员账号ID (对应 user 表)
-     */
-    private Long adminId;
-
-    /**
-     * 企业名称
+     * 企业完整名称
      */
     private String companyName;
 
     /**
-     * 统一社会信用代码/营业执照号
+     * 统一社会信用代码
      */
     private String licenseNo;
 
     /**
-     * 企业联系人
+     * 法定代表人
      */
-    private String contactName;
+    private String legalPerson;
 
     /**
-     * 联系电话
+     * 企业类型 (如: 有限责任公司、个体工商户)
      */
-    private String contactPhone;
+    private String companyType;
+
+    /**
+     * 企业规模 (如: 0-20人, 20-99人, 100人以上)
+     */
+    private String scale;
 
     /**
      * 企业详细地址
@@ -49,29 +51,33 @@ public class Company implements Serializable {
     private String address;
 
     /**
-     * 审核状态: 0-待审核, 1-审核通过, 2-审核驳回
+     * 营业执照OSS图片地址
+     */
+    private String businessLicenseImg;
+
+    /**
+     * 企业Logo
+     */
+    private String logo;
+
+    /**
+     * 审核状态：0-待完善信息(草稿), 1-待平台审核, 2-审核通过, 3-审核驳回
      */
     private Integer auditStatus;
 
     /**
-     * 驳回原因 (当审核驳回时展示给企业看)
-     */
-    private String rejectReason;
-
-    /**
-     * 创建时间
+     * 
      */
     private Date createTime;
 
     /**
-     * 更新时间
+     * 
      */
     private Date updateTime;
 
     /**
      * 逻辑删除
      */
-    @TableLogic
     private Integer isDeleted;
 
     @TableField(exist = false)
@@ -90,14 +96,15 @@ public class Company implements Serializable {
         }
         Company other = (Company) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getAdminId() == null ? other.getAdminId() == null : this.getAdminId().equals(other.getAdminId()))
             && (this.getCompanyName() == null ? other.getCompanyName() == null : this.getCompanyName().equals(other.getCompanyName()))
             && (this.getLicenseNo() == null ? other.getLicenseNo() == null : this.getLicenseNo().equals(other.getLicenseNo()))
-            && (this.getContactName() == null ? other.getContactName() == null : this.getContactName().equals(other.getContactName()))
-            && (this.getContactPhone() == null ? other.getContactPhone() == null : this.getContactPhone().equals(other.getContactPhone()))
+            && (this.getLegalPerson() == null ? other.getLegalPerson() == null : this.getLegalPerson().equals(other.getLegalPerson()))
+            && (this.getCompanyType() == null ? other.getCompanyType() == null : this.getCompanyType().equals(other.getCompanyType()))
+            && (this.getScale() == null ? other.getScale() == null : this.getScale().equals(other.getScale()))
             && (this.getAddress() == null ? other.getAddress() == null : this.getAddress().equals(other.getAddress()))
+            && (this.getBusinessLicenseImg() == null ? other.getBusinessLicenseImg() == null : this.getBusinessLicenseImg().equals(other.getBusinessLicenseImg()))
+            && (this.getLogo() == null ? other.getLogo() == null : this.getLogo().equals(other.getLogo()))
             && (this.getAuditStatus() == null ? other.getAuditStatus() == null : this.getAuditStatus().equals(other.getAuditStatus()))
-            && (this.getRejectReason() == null ? other.getRejectReason() == null : this.getRejectReason().equals(other.getRejectReason()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
             && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
             && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
@@ -108,14 +115,15 @@ public class Company implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getAdminId() == null) ? 0 : getAdminId().hashCode());
         result = prime * result + ((getCompanyName() == null) ? 0 : getCompanyName().hashCode());
         result = prime * result + ((getLicenseNo() == null) ? 0 : getLicenseNo().hashCode());
-        result = prime * result + ((getContactName() == null) ? 0 : getContactName().hashCode());
-        result = prime * result + ((getContactPhone() == null) ? 0 : getContactPhone().hashCode());
+        result = prime * result + ((getLegalPerson() == null) ? 0 : getLegalPerson().hashCode());
+        result = prime * result + ((getCompanyType() == null) ? 0 : getCompanyType().hashCode());
+        result = prime * result + ((getScale() == null) ? 0 : getScale().hashCode());
         result = prime * result + ((getAddress() == null) ? 0 : getAddress().hashCode());
+        result = prime * result + ((getBusinessLicenseImg() == null) ? 0 : getBusinessLicenseImg().hashCode());
+        result = prime * result + ((getLogo() == null) ? 0 : getLogo().hashCode());
         result = prime * result + ((getAuditStatus() == null) ? 0 : getAuditStatus().hashCode());
-        result = prime * result + ((getRejectReason() == null) ? 0 : getRejectReason().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
@@ -129,14 +137,15 @@ public class Company implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", adminId=").append(adminId);
         sb.append(", companyName=").append(companyName);
         sb.append(", licenseNo=").append(licenseNo);
-        sb.append(", contactName=").append(contactName);
-        sb.append(", contactPhone=").append(contactPhone);
+        sb.append(", legalPerson=").append(legalPerson);
+        sb.append(", companyType=").append(companyType);
+        sb.append(", scale=").append(scale);
         sb.append(", address=").append(address);
+        sb.append(", businessLicenseImg=").append(businessLicenseImg);
+        sb.append(", logo=").append(logo);
         sb.append(", auditStatus=").append(auditStatus);
-        sb.append(", rejectReason=").append(rejectReason);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", isDeleted=").append(isDeleted);

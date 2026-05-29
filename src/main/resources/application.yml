@@ -18,6 +18,14 @@ spring:
     url: jdbc:mysql://localhost:3306/housekeep?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false
     username: root
     password: 123
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+  cache:
+    redis:
+      time-to-live: 1800000 #设置缓存数据的过期时间
+
 
 
 
@@ -35,6 +43,19 @@ mybatis-plus:
       logic-delete-field: isDeleted # 注意：这里填的是 Java 实体类中的字段名，而不是数据库列名
       logic-delete-value: 1 # 逻辑已删除值
       logic-not-delete-value: 0 # 逻辑未删除值
+
+
+#阿里云OSS
+aliyun:
+  oss:
+    endpoint: https://oss-cn-beijing.aliyuncs.com
+    bucketName: java-study-ai-start
+    region: cn-beijing
+    # 图片压缩配置
+    enable-compress: true
+    max-width: 1920
+    compress-quality: 0.75
+    compress-threshold: 204800
 
 knife4j:
   enable: true

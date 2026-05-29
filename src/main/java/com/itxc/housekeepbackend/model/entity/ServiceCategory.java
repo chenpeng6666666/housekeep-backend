@@ -3,9 +3,10 @@ package com.itxc.housekeepbackend.model.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 服务分类表
@@ -21,32 +22,37 @@ public class ServiceCategory implements Serializable {
     private Long id;
 
     /**
-     * 父级ID
+     * 分类名称 (如：日常保洁、月嫂等)
      */
-    private Long parentId;
+    private String name;
 
     /**
-     * 分类名称
+     * 分类图标URL
      */
-    private String categoryName;
+    private String icon;
 
     /**
-     * 排序权重
+     * 排序号 (越小越靠前)
      */
-    private Integer sortOrder;
+    private Integer sort;
 
     /**
-     * 状态
+     * 状态：0-禁用, 1-启用
      */
     private Integer status;
 
     /**
-     * 创建时间
+     * 服务详情（描述服务的详细信息）
+     */
+    private String description;
+
+    /**
+     * 
      */
     private Date createTime;
 
     /**
-     * 更新时间
+     * 
      */
     private Date updateTime;
 
@@ -71,10 +77,11 @@ public class ServiceCategory implements Serializable {
         }
         ServiceCategory other = (ServiceCategory) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getParentId() == null ? other.getParentId() == null : this.getParentId().equals(other.getParentId()))
-            && (this.getCategoryName() == null ? other.getCategoryName() == null : this.getCategoryName().equals(other.getCategoryName()))
-            && (this.getSortOrder() == null ? other.getSortOrder() == null : this.getSortOrder().equals(other.getSortOrder()))
+            && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
+            && (this.getIcon() == null ? other.getIcon() == null : this.getIcon().equals(other.getIcon()))
+            && (this.getSort() == null ? other.getSort() == null : this.getSort().equals(other.getSort()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
+            && (this.getDescription() == null ? other.getDescription() == null : this.getDescription().equals(other.getDescription()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
             && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
             && (this.getIsDeleted() == null ? other.getIsDeleted() == null : this.getIsDeleted().equals(other.getIsDeleted()));
@@ -85,10 +92,11 @@ public class ServiceCategory implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getParentId() == null) ? 0 : getParentId().hashCode());
-        result = prime * result + ((getCategoryName() == null) ? 0 : getCategoryName().hashCode());
-        result = prime * result + ((getSortOrder() == null) ? 0 : getSortOrder().hashCode());
+        result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
+        result = prime * result + ((getIcon() == null) ? 0 : getIcon().hashCode());
+        result = prime * result + ((getSort() == null) ? 0 : getSort().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
+        result = prime * result + ((getDescription() == null) ? 0 : getDescription().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         result = prime * result + ((getIsDeleted() == null) ? 0 : getIsDeleted().hashCode());
@@ -102,10 +110,11 @@ public class ServiceCategory implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", parentId=").append(parentId);
-        sb.append(", categoryName=").append(categoryName);
-        sb.append(", sortOrder=").append(sortOrder);
+        sb.append(", name=").append(name);
+        sb.append(", icon=").append(icon);
+        sb.append(", sort=").append(sort);
         sb.append(", status=").append(status);
+        sb.append(", description=").append(description);
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", isDeleted=").append(isDeleted);
