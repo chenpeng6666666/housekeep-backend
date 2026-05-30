@@ -13,6 +13,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static com.itxc.housekeepbackend.constant.UserConstant.*;
+
 @Slf4j
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
@@ -49,11 +51,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         Object id = null;
 
         // 6. 根据不同的角色要求，去 Session 里拿不同的钥匙
-        if ("admin".equals(role)) {
+        if (ADMIN.equals(role)) {
             id = request.getSession().getAttribute("admin");
-        } else if ("company".equals(role)) {
+        } else if (COMPANY.equals(role)) {
             id = request.getSession().getAttribute("employeeId");
-        } else if ("user".equals(role)) {
+        } else if (USER.equals(role)) {
             id = request.getSession().getAttribute("userId");
         }
 

@@ -1,5 +1,6 @@
 package com.itxc.housekeepbackend.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -70,7 +71,6 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
         CompanyEmployee employee = companyEmployeeService.getLoginEmp(request);
         ThrowUtils.throwIf(!employee.getCompanyId().equals(company.getId()), ErrorCode.NO_AUTH_ERROR, "无权限修改");
         ThrowUtils.throwIf(!employee.getRoleType().equals(EmployeeConstant.Employee_ADMIN), ErrorCode.NO_AUTH_ERROR, "非企业管理员无法修改企业信息");
-
         return this.updateById(company);
     }
 

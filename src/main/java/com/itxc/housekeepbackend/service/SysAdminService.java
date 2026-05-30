@@ -2,6 +2,7 @@ package com.itxc.housekeepbackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itxc.housekeepbackend.model.dto.admin.AdminLoginDto;
+import com.itxc.housekeepbackend.model.dto.company.CompanyAuditRequest;
 import com.itxc.housekeepbackend.model.entity.SysAdmin;
 import com.itxc.housekeepbackend.model.vo.AdminLoginVo;
 
@@ -28,4 +29,12 @@ public interface SysAdminService extends IService<SysAdmin> {
      * @return
      */
     SysAdmin getLoginUser();
+
+    /**
+     * 企业审核
+     * @param companyAuditRequest
+     * @return
+     */
+    Boolean auditCompany(CompanyAuditRequest companyAuditRequest);
+
 }

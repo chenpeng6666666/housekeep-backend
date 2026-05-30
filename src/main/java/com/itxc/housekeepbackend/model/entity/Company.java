@@ -66,6 +66,11 @@ public class Company implements Serializable {
     private Integer auditStatus;
 
     /**
+     * 驳回原因
+     */
+    private String rejectReason;
+
+    /**
      * 
      */
     private Date createTime;

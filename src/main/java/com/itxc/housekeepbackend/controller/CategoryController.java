@@ -2,7 +2,6 @@ package com.itxc.housekeepbackend.controller;
 
 import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itxc.housekeepbackend.annotation.RequireAuth;
 import com.itxc.housekeepbackend.common.BaseResponse;
@@ -12,8 +11,6 @@ import com.itxc.housekeepbackend.exception.ThrowUtils;
 import com.itxc.housekeepbackend.model.entity.ServiceCategory;
 import com.itxc.housekeepbackend.model.entity.ServiceItem;
 import com.itxc.housekeepbackend.model.entity.SysAdmin;
-import com.itxc.housekeepbackend.model.entity.User;
-import com.itxc.housekeepbackend.model.enums.RoleTypeEnum;
 import com.itxc.housekeepbackend.service.ServiceCategoryService;
 import com.itxc.housekeepbackend.service.SysAdminService;
 import com.itxc.housekeepbackend.service.UserService;

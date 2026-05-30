@@ -11,7 +11,6 @@ import com.itxc.housekeepbackend.mapper.UserMapper;
 import com.itxc.housekeepbackend.model.dto.user.UserLoginDto;
 import com.itxc.housekeepbackend.model.dto.user.UserRegisterDto;
 import com.itxc.housekeepbackend.model.entity.User;
-import com.itxc.housekeepbackend.model.enums.RoleTypeEnum;
 import com.itxc.housekeepbackend.model.vo.UserVO;
 import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -58,8 +57,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setPassword(getEncryptPassword(password));
         user.setCreateTime(new Date());
         user.setUpdateTime(new Date());
-        // 4 新增用户 通过注册的用户角色均为 user
-        user.setRoleType(RoleTypeEnum.USER.getValue());
+        // 4 通过注册的用户角色均为普通用户
+        user.setRoleType(0);
         this.save(user);
     }
 

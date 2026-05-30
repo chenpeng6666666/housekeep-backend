@@ -1,6 +1,7 @@
 package com.itxc.housekeepbackend.model.dto.company;
 
 import com.itxc.housekeepbackend.common.PageRequest;
+import lombok.Data;
 
 /**
  * @author Xy
@@ -8,6 +9,7 @@ import com.itxc.housekeepbackend.common.PageRequest;
  * @description: 企业分页查询请求参数
  * @date 2026/5/30 19:00
  */
+@Data
 public class CompanyPageRequest extends PageRequest {
 
 

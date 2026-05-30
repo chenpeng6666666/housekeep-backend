@@ -4,10 +4,12 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itxc.housekeepbackend.annotation.CheckCompanyAuditAndAdmin;
+import com.itxc.housekeepbackend.annotation.RequireAuth;
 import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
 import com.itxc.housekeepbackend.exception.ErrorCode;
 import com.itxc.housekeepbackend.exception.ThrowUtils;
+import com.itxc.housekeepbackend.model.dto.company.CompanyAuditRequest;
 import com.itxc.housekeepbackend.model.dto.company.CompanyPageRequest;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
 import com.itxc.housekeepbackend.model.entity.Company;
@@ -15,11 +17,15 @@ import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
 import com.itxc.housekeepbackend.model.vo.CompanyVO;
 import com.itxc.housekeepbackend.service.CompanyEmployeeService;
 import com.itxc.housekeepbackend.service.CompanyService;
+import com.itxc.housekeepbackend.service.SysAdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import static com.itxc.housekeepbackend.constant.UserConstant.ADMIN;
+import static com.itxc.housekeepbackend.constant.UserConstant.COMPANY;
 
 /**
  * @author Xy
@@ -38,6 +44,9 @@ public class CompanyController {
     @Resource
     private CompanyEmployeeService companyEmployeeService;
 
+    @Resource
+    private SysAdminService sysAdminService;
+
     /**
      * 企业入驻
      */
@@ -49,20 +58,17 @@ public class CompanyController {
         return ResultUtils.success(true);
     }
 
-
-
-
     /**
      * 企业信息修改(请求参数必须包含id) 企业管理员权限
      */
     @PutMapping("/update")
+    @RequireAuth(COMPANY)
     public BaseResponse<String> updateCompany(@RequestBody Company company, HttpServletRequest request){
         // 参数校验
         ThrowUtils.throwIf(ObjUtil.isNull(company), ErrorCode.PARAMS_ERROR);
         boolean b = companyService.updateCompany(company,request);
         ThrowUtils.throwIf(!b, ErrorCode.OPERATION_ERROR,"企业信息修改失败");
         return ResultUtils.success("企业信息已修改，待审核");
-
     }
 
     /**
@@ -102,7 +108,6 @@ public class CompanyController {
         return ResultUtils.success(null);
     }
 
-
     /**
      * 获取当前员工的所属企业的详细信息
      */
@@ -132,7 +137,16 @@ public class CompanyController {
         return ResultUtils.success(page);
     }
 
-
+    /**
+     * 管理员审核企业
+     */
+    @PutMapping("/audit")
+    @RequireAuth(ADMIN)
+    public BaseResponse<Boolean> auditCompany(@RequestBody CompanyAuditRequest companyAuditRequest){
+        // 1 参数校验
+        ThrowUtils.throwIf(ObjUtil.isNull(companyAuditRequest), ErrorCode.PARAMS_ERROR);
+        return ResultUtils.success(sysAdminService.auditCompany(companyAuditRequest));
+    }
 
 
 

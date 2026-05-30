@@ -15,6 +15,7 @@
             <result property="businessLicenseImg" column="business_license_img" jdbcType="VARCHAR"/>
             <result property="logo" column="logo" jdbcType="VARCHAR"/>
             <result property="auditStatus" column="audit_status" jdbcType="TINYINT"/>
+            <result property="rejectReason" column="reject_reason" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="isDeleted" column="is_deleted" jdbcType="TINYINT"/>
@@ -24,7 +25,7 @@
         id,company_name,license_no,
         legal_person,company_type,scale,
         address,business_license_img,logo,
-        audit_status,create_time,update_time,
+        audit_status,reject_reason,create_time,update_time,
         is_deleted
     </sql>
 </mapper>

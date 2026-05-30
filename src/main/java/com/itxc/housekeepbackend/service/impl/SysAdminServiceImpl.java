@@ -9,15 +9,21 @@ import com.itxc.housekeepbackend.common.BaseContext;
 import com.itxc.housekeepbackend.exception.BusinessException;
 import com.itxc.housekeepbackend.exception.ErrorCode;
 import com.itxc.housekeepbackend.exception.ThrowUtils;
+import com.itxc.housekeepbackend.mapper.CompanyMapper;
 import com.itxc.housekeepbackend.mapper.SysAdminMapper;
 import com.itxc.housekeepbackend.model.dto.admin.AdminLoginDto;
+import com.itxc.housekeepbackend.model.dto.company.CompanyAuditRequest;
+import com.itxc.housekeepbackend.model.entity.Company;
 import com.itxc.housekeepbackend.model.entity.SysAdmin;
 import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.vo.AdminLoginVo;
 import com.itxc.housekeepbackend.service.SysAdminService;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import static com.itxc.housekeepbackend.constant.StatusConstant.*;
 
 /**
  * @author Lenovo
@@ -27,6 +33,9 @@ import javax.servlet.http.HttpServletRequest;
 @Service
 public class SysAdminServiceImpl extends ServiceImpl<SysAdminMapper, SysAdmin>
         implements SysAdminService {
+
+    @Resource
+    private CompanyMapper companyMapper;
 
 
     @Override
@@ -67,6 +76,29 @@ public class SysAdminServiceImpl extends ServiceImpl<SysAdminMapper, SysAdmin>
         SysAdmin admin = this.getById(adminId);
         ThrowUtils.throwIf(admin == null, ErrorCode.NOT_LOGIN_ERROR,"用户未登录");
         return admin;
+    }
+
+    @Override
+    public Boolean auditCompany(CompanyAuditRequest companyAuditRequest) {
+        Long companyId = companyAuditRequest.getId();
+        Integer auditStatus = companyAuditRequest.getAuditStatus();
+        String rejectReason = companyAuditRequest.getRejectReason();
+        ThrowUtils.throwIf(auditStatus == null || auditStatus.equals(AUDIT_STATUS_DRAFT), ErrorCode.PARAMS_ERROR);
+        // 1 查询当前企业是否存在
+        Company company = companyMapper.selectById(companyId);
+        ThrowUtils.throwIf(company == null, ErrorCode.NOT_FOUND_ERROR, "企业不存在");
+        // 2 如果是拒绝则添加拒绝理由
+        if (auditStatus.equals(AUDIT_STATUS_REJECT)){
+            company.setAuditStatus(AUDIT_STATUS_REJECT);
+            company.setRejectReason(rejectReason);
+        }
+        // 3 如果是通过则删除原有的拒绝理由
+        else if (auditStatus.equals(AUDIT_STATUS_SUCCESS)){
+            company.setAuditStatus(AUDIT_STATUS_SUCCESS);
+            company.setRejectReason(null);
+        }
+        companyMapper.updateById(company);
+        return true;
     }
 }
 
