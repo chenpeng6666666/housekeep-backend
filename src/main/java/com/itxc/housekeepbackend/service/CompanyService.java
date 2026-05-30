@@ -1,8 +1,11 @@
 package com.itxc.housekeepbackend.service;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
 import com.itxc.housekeepbackend.model.entity.Company;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
 * @author Lenovo
@@ -18,5 +21,17 @@ public interface CompanyService extends IService<Company> {
     void companyRegister(CompanyRegisterDto dto);
 
 
+    /**
+     * 企业信息修改
+     * @param company 修改的参数
+     * @return 是否修改成功
+     */
+    boolean updateCompany(Company company, HttpServletRequest request);
 
+    /**
+     * 获取查询条件
+     * @param company
+     * @return
+     */
+    Wrapper<Company> getQueryWrapper(Company company);
 }

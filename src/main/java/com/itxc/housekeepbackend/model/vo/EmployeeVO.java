@@ -2,19 +2,24 @@ package com.itxc.housekeepbackend.model.vo;
 
 import lombok.Data;
 
-/**
- * @author Xy
- * @version 1.0
- * @description:  企业用户登录后的信息
- * @date 2026/4/5 12:45
- */
+
 @Data
 public class EmployeeVO {
+
+    /**
+     * 员工主键ID
+     */
+    private Long id;
 
     /**
      * 员工姓名
      */
     private String realName;
+
+    /**
+     * 角色: ADMIN-超级管理员, STAFF-普通员工
+     */
+    private String roleType;
 
     /**
      * 联系电话/登录账号
@@ -30,4 +35,12 @@ public class EmployeeVO {
      * 企业名称
      */
     private String companyName;
+
+
+    /**
+     * 企业审核状态：0-待完善信息(草稿), 1-待平台审核, 2-审核通过, 3-审核驳回
+     */
+    private Integer auditStatus;
+
+
 }

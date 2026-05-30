@@ -36,4 +36,6 @@ public class UserVO {
     private Integer roleType;
 
 
+
+
 }
