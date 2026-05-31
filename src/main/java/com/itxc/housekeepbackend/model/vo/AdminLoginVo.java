@@ -11,7 +11,7 @@ public class AdminLoginVo {
 
     private String realName;
 
-    private String avatar;
+    private Integer roleType;
 
     private String token;
 }

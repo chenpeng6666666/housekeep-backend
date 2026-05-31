@@ -25,7 +25,7 @@ import static com.itxc.housekeepbackend.constant.StatusConstant.STATUS_NORMAL;
 /**
  * @author Xy
  * @version 1.0
- * @description: TODO 服务分类接口
+ * @description: 服务分类接口
  * @date 2026/4/5 16:39
  */
 @RestController

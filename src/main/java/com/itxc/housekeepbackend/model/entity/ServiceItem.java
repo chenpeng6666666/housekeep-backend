@@ -9,7 +9,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 企业服务条目表
+ * 平台标准服务项目表
  * @TableName service_item
  */
 @TableName(value ="service_item")
@@ -22,49 +22,54 @@ public class ServiceItem implements Serializable {
     private Long id;
 
     /**
-     * 归属企业ID
-     */
-    private Long companyId;
-
-    /**
-     * 关联分类ID
+     * 所属分类ID (关联 service_category)
      */
     private Long categoryId;
 
     /**
-     * 服务名称
+     * 服务项目名称 (如: 深度擦玻璃)
      */
-    private String itemName;
+    private String name;
 
     /**
-     * 单价
+     * 服务项目封面图
      */
-    private BigDecimal price;
+    private String coverImg;
 
     /**
-     * 单位
+     * 计费单位 (如: 小时、平米、台、次)
      */
     private String unit;
 
     /**
-     * 预计耗时(分钟)
+     * 平台建议指导价
      */
-    private Integer duration;
+    private BigDecimal guidancePrice;
 
     /**
-     * 创建时间
+     * 服务标准描述/内容说明
+     */
+    private String description;
+
+    /**
+     * 状态：0-下架禁用, 1-上架正常
+     */
+    private Integer status;
+
+    /**
+     * 排序权重
+     */
+    private Integer sort;
+
+    /**
+     * 
      */
     private Date createTime;
 
     /**
-     * 更新时间
+     * 
      */
     private Date updateTime;
-
-    /**
-     * 逻辑删除
-     */
-    private Integer isDeleted;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

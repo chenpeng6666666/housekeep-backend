@@ -3,7 +3,7 @@ package com.itxc.housekeepbackend.exception;
 /**
  * @author Xy
  * @version 1.0
- * @description: TODO 异常处理工具类
+ * @description: 异常处理工具类
  * @date 2026/3/18 19:28
  */
 public class ThrowUtils {
