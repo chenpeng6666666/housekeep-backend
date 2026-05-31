@@ -3,6 +3,7 @@ package com.itxc.housekeepbackend.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.itxc.housekeepbackend.annotation.RequireAuth;
 import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
 import com.itxc.housekeepbackend.exception.ErrorCode;
@@ -13,11 +14,15 @@ import com.itxc.housekeepbackend.model.dto.user.UserUpdateDto;
 import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.vo.UserVO;
 import com.itxc.housekeepbackend.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+
+import static com.itxc.housekeepbackend.constant.UserConstant.ADMIN;
+import static com.itxc.housekeepbackend.constant.UserConstant.USER;
 
 /**
  * @author Xy
@@ -25,6 +30,7 @@ import java.util.Date;
  * @description: 用户接口
  * @date 2026/4/3 18:19
  */
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -67,9 +73,10 @@ public class UserController {
     }
 
     /**
-     * 用户信息修改（普通用户）
+     * 用户信息修改（普通用户） TODO dto检查是否合适
      */
-    @PostMapping("/update")
+    @PutMapping("/update")
+    @RequireAuth(USER)
     public BaseResponse<String> update(@RequestBody UserUpdateDto userUpdateDto){
         // 1 参数校验
         ThrowUtils.throwIf(ObjUtil.isEmpty(userUpdateDto), ErrorCode.PARAMS_ERROR, "用户信息不能为空");
@@ -86,6 +93,7 @@ public class UserController {
      * 删除用户(仅平台管理员)
      */
     @DeleteMapping
+    @RequireAuth(ADMIN)
     public BaseResponse<String> delete(@RequestBody String userId) {
         // 1 请求参数校验
         ThrowUtils.throwIf(StrUtil.isBlank(userId), ErrorCode.PARAMS_ERROR);
@@ -98,15 +106,14 @@ public class UserController {
         return ResultUtils.success("删除成功");
     }
 
-
-
-
-
-
-
-
-
-
+    /**
+     * 获取当前登录用户的详细信息
+     */
+    @GetMapping("/profile")
+    @RequireAuth(USER)
+    public BaseResponse<User> getProfile() {
+        return ResultUtils.success(userService.getLoginUser());
+    }
 
 
 }

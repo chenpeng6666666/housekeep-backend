@@ -23,6 +23,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.itxc.housekeepbackend.constant.EmployeeConstant.Employee_ADMIN;
+import static com.itxc.housekeepbackend.constant.StatusConstant.AUDIT_STATUS_DRAFT;
+import static com.itxc.housekeepbackend.constant.StatusConstant.AUDIT_STATUS_PENDING;
 
 @Service
 public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> implements CompanyService {
@@ -50,7 +52,8 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
         Company company = new Company();
         company.setCompanyName(dto.getCompanyName());
         company.setLicenseNo(dto.getLicenseNo());
-        company.setAuditStatus(0);
+        // 企业首次入驻 将企业状态置为 草稿
+        company.setAuditStatus(AUDIT_STATUS_DRAFT);
         transactionTemplate.executeWithoutResult(status -> {
             this.save(company);
 
@@ -71,6 +74,10 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
         CompanyEmployee employee = companyEmployeeService.getLoginEmp(request);
         ThrowUtils.throwIf(!employee.getCompanyId().equals(company.getId()), ErrorCode.NO_AUTH_ERROR, "无权限修改");
         ThrowUtils.throwIf(!employee.getRoleType().equals(EmployeeConstant.Employee_ADMIN), ErrorCode.NO_AUTH_ERROR, "非企业管理员无法修改企业信息");
+        // 将审核状态置为待审核
+        company.setAuditStatus(AUDIT_STATUS_PENDING);
+        company.setRejectReason("");
+
         return this.updateById(company);
     }
 

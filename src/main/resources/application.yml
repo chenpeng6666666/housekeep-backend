@@ -44,6 +44,15 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值
       logic-not-delete-value: 0 # 逻辑未删除值
 
+# 图片存储方式配置 (local: 本地存储, oss: 阿里云OSS)
+storage:
+  type: local
+  local-base-path: D:/img/uploads
+  local-access-url: http://localhost:8081/api/uploads
+  enable-compress: true
+  max-width: 1920
+  compress-quality: 0.75
+  compress-threshold: 204800
 
 #阿里云OSS
 aliyun:
@@ -51,11 +60,7 @@ aliyun:
     endpoint: https://oss-cn-beijing.aliyuncs.com
     bucketName: java-study-ai-start
     region: cn-beijing
-    # 图片压缩配置
-    enable-compress: true
-    max-width: 1920
-    compress-quality: 0.75
-    compress-threshold: 204800
+
 
 knife4j:
   enable: true

@@ -12,9 +12,4 @@ public class AliyunOSSProperties {
     private String bucketName;
     private String region;
 
-
-    private boolean enableCompress = true;
-    private int maxWidth = 1920;
-    private float compressQuality = 0.75f;
-    private long compressThreshold = 200 * 1024;
 }

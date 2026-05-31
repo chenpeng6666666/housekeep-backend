@@ -10,6 +10,7 @@ import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.service.SysAdminService;
 import com.itxc.housekeepbackend.service.UserService;
 import com.itxc.housekeepbackend.utils.AliyunOSSOperator;
+import com.itxc.housekeepbackend.utils.StorageService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ import javax.annotation.Resource;
 public class UploadController {
 
     @Autowired
-    private AliyunOSSOperator aliyunOSSOperator;
+    private StorageService storageService;
 
     @Resource
     private UserService userService;
@@ -63,7 +64,7 @@ public class UploadController {
 
     private BaseResponse<String> doUpload(MultipartFile file, ImageType type, String desc) throws Exception {
         log.info("{}上传: {}", desc, file.getOriginalFilename());
-        String url = aliyunOSSOperator.upload(file.getBytes(), file.getOriginalFilename(), type);
+        String url = storageService.upload(file.getBytes(), file.getOriginalFilename(), type);
         log.info("{}上传成功, url: {}", desc, url);
         return ResultUtils.success(url);
     }
