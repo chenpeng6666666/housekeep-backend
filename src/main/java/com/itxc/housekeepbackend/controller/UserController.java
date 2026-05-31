@@ -73,7 +73,7 @@ public class UserController {
     }
 
     /**
-     * 用户信息修改（普通用户） TODO dto检查是否合适
+     * 用户信息修改（普通用户）
      */
     @PutMapping("/update")
     @RequireAuth(USER)
@@ -114,6 +114,9 @@ public class UserController {
     public BaseResponse<User> getProfile() {
         return ResultUtils.success(userService.getLoginUser());
     }
+
+
+
 
 
 }

@@ -35,15 +35,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
             basePath = basePath + "/";
         }
 
-        // 3. 🚨 终极安全映射写法：直接用 file: 加上绝对路径 (例如 file:D:/img/uploads/)
+        // 3. 安全映射写法：直接用 file: 加上绝对路径 (例如 file:D:/img/uploads/)
         String resourceLocation = "file:" + basePath;
-
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(resourceLocation);
 
-        // 4. 打印出来确认一下，启动时留意控制台！
-        System.out.println("==================================================");
-        System.out.println("🚀 静态资源映射已启动: /uploads/** -> " + resourceLocation);
-        System.out.println("==================================================");
     }
 }

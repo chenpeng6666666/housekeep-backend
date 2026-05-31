@@ -43,6 +43,16 @@ public class User implements Serializable {
     private String nickname;
 
     /**
+     * 头像URL
+     */
+    private String avatar;
+
+    /**
+     * 性别 (0: 女, 1: 男, 2: 保密)
+     */
+    private Integer gender;
+
+    /**
      * 用户角色 (0: 普通用户, 1: VIP用户 )
      */
     private Integer roleType;

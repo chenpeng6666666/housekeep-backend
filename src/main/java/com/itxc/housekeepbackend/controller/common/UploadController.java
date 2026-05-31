@@ -38,9 +38,6 @@ public class UploadController {
 
     @PostMapping("/avatar")
     public BaseResponse<String> uploadAvatar(MultipartFile file) throws Exception {
-        // 判断当前登录用户是否已经登录
-        User loginUser = userService.getLoginUser();
-        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR, "用户未登录");
         return doUpload(file, ImageType.AVATAR, "用户头像");
     }
 

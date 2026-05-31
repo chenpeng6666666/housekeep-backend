@@ -26,6 +26,11 @@ public class UserVO {
     private String nickname;
 
     /**
+     * 头像URL
+     */
+    private String avatar;
+
+    /**
      * 用户手机号
      */
     private String phone;
@@ -34,6 +39,11 @@ public class UserVO {
      * 用户角色
      */
     private Integer roleType;
+
+    /**
+     * 性别 (0: 女, 1: 男, 2: 保密)
+     */
+    private Integer gender;
 
 
 
