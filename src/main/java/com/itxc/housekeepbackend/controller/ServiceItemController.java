@@ -1,5 +1,6 @@
 package com.itxc.housekeepbackend.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itxc.housekeepbackend.annotation.RequireAuth;
 import com.itxc.housekeepbackend.common.BaseResponse;
@@ -13,6 +14,8 @@ import com.itxc.housekeepbackend.service.ServiceItemService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
+
+import java.util.List;
 
 import static com.itxc.housekeepbackend.constant.UserConstant.ADMIN;
 
@@ -70,5 +73,13 @@ public class ServiceItemController {
         return ResultUtils.success(result);
     }
 
+    /**
+     * 获取服务项目列表
+     */
+    @GetMapping("/list")
+    public BaseResponse<List<ServiceItem>> list(Long categoryId) {
+        List<ServiceItem> serviceItems = serviceItemService.list(new LambdaQueryWrapper<ServiceItem>().eq(ServiceItem::getCategoryId, categoryId));
+        return ResultUtils.success(serviceItems);
+    }
 
 }

@@ -8,9 +8,7 @@ import com.itxc.housekeepbackend.common.ResultUtils;
 import com.itxc.housekeepbackend.exception.ErrorCode;
 import com.itxc.housekeepbackend.exception.ThrowUtils;
 import com.itxc.housekeepbackend.model.dto.address.AddressDto;
-import com.itxc.housekeepbackend.model.entity.Address;
 import com.itxc.housekeepbackend.model.entity.User;
-import com.itxc.housekeepbackend.service.AddressService;
 import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
