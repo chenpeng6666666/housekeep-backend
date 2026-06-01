@@ -1,5 +1,6 @@
 package com.itxc.housekeepbackend.service;
 
+import com.itxc.housekeepbackend.model.dto.companyEmployee.EmployeeSaveDTO;
 import com.itxc.housekeepbackend.model.dto.user.UserLoginDto;
 import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -25,8 +26,22 @@ public interface CompanyEmployeeService extends IService<CompanyEmployee> {
 
     /**
      * 获取当前登录员工信息
-     * @param request
-     * @return
+     * @param request 请求对象
+     * @return 当前登录员工的信息
      */
     CompanyEmployee getLoginEmp(HttpServletRequest request);
+
+    /**
+     * 获取当前登录员工信息
+     * @return 当前登录员工的信息
+     */
+    CompanyEmployee getLoginEmp();
+
+    /**
+     * 新增修改员工/以及技能
+     * @param dto
+     * @param currentCompanyId
+     * @return
+     */
+    boolean saveOrUpdateEmployeeWithSkills(EmployeeSaveDTO dto, Long currentCompanyId);
 }
