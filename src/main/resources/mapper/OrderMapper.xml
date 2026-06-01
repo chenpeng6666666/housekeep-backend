@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itxc.housekeepbackend.mapper.OrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.itxc.housekeepbackend.model.entity.Order">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="orderNo" column="order_no" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="serviceId" column="service_id" jdbcType="BIGINT"/>
+            <result property="addressId" column="address_id" jdbcType="BIGINT"/>
+            <result property="serviceTime" column="service_time" jdbcType="TIMESTAMP"/>
+            <result property="quantity" column="quantity" jdbcType="INTEGER"/>
+            <result property="totalAmount" column="total_amount" jdbcType="DECIMAL"/>
+            <result property="requireScore" column="require_score" jdbcType="DECIMAL"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,order_no,user_id,
+        service_id,address_id,service_time,
+        quantity,total_amount,require_score,
+        remark,status,create_time,
+        update_time
+    </sql>
+</mapper>

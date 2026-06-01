@@ -82,4 +82,13 @@ public class ServiceItemController {
         return ResultUtils.success(serviceItems);
     }
 
+    /**
+     * 获取单挑服务详情
+     */
+    @GetMapping("/{id}")
+    public BaseResponse<ServiceItem> get(@PathVariable Long id) {
+        ServiceItem serviceItem = serviceItemService.getById(id);
+        return ResultUtils.success(serviceItem);
+    }
+
 }
