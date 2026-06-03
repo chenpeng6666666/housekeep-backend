@@ -67,6 +67,11 @@ public class Order implements Serializable {
     private String remark;
 
     /**
+     * 用户需求图片
+     */
+    private String requirementImg;
+
+    /**
      * 订单状态: 0-待派单, 1-已接单待上门, 2-服务中, 3-已完成, 4-已取消
      */
     private Integer status;

@@ -19,6 +19,8 @@ public class OrderSubmitDTO {
     private BigDecimal requireScore; // 0.0, 4.0, 4.8
 
     private String remark;
+
+    private String requirementImg;
     
     // 前端传过来的总价仅供参考或对账，实际金额由后端计算
     private BigDecimal totalAmount; 
