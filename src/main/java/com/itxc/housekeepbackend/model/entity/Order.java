@@ -37,6 +37,16 @@ public class Order implements Serializable {
     private Long serviceId;
 
     /**
+     * 分配企业ID
+     */
+    private Long companyId;
+
+    /**
+     * 分配员工ID
+     */
+    private Long employeeId;
+
+    /**
      * 服务地址ID
      */
     private Long addressId;
@@ -45,6 +55,11 @@ public class Order implements Serializable {
      * 期望上门服务时间
      */
     private Date serviceTime;
+
+    /**
+     * 预计服务结束时间
+     */
+    private Date estimatedEndTime;
 
     /**
      * 购买数量

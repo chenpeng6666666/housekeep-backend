@@ -25,4 +25,6 @@ public class OrderVO {
     private String serviceName;
     private String serviceCoverImg;
     private String serviceDescription; // 描述信息
+    private String companyName;
+    private String employeeName;
 }

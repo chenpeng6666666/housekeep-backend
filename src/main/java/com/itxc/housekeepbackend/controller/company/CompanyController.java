@@ -2,6 +2,7 @@ package com.itxc.housekeepbackend.controller.company;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itxc.housekeepbackend.annotation.CheckCompanyAuditAndAdmin;
 import com.itxc.housekeepbackend.annotation.RequireAuth;
@@ -14,7 +15,9 @@ import com.itxc.housekeepbackend.model.dto.company.CompanyPageRequest;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
 import com.itxc.housekeepbackend.model.entity.Company;
 import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
+import com.itxc.housekeepbackend.model.vo.CompanyDetailVO;
 import com.itxc.housekeepbackend.model.vo.CompanyVO;
+import com.itxc.housekeepbackend.model.vo.OrderVO;
 import com.itxc.housekeepbackend.service.CompanyEmployeeService;
 import com.itxc.housekeepbackend.service.CompanyService;
 import com.itxc.housekeepbackend.service.SysAdminService;
@@ -24,6 +27,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.List;
+
+import static com.itxc.housekeepbackend.constant.StatusConstant.AUDIT_STATUS_SUCCESS;
 import static com.itxc.housekeepbackend.constant.UserConstant.ADMIN;
 import static com.itxc.housekeepbackend.constant.UserConstant.COMPANY;
 
@@ -146,6 +152,31 @@ public class CompanyController {
         // 1 参数校验
         ThrowUtils.throwIf(ObjUtil.isNull(companyAuditRequest), ErrorCode.PARAMS_ERROR);
         return ResultUtils.success(sysAdminService.auditCompany(companyAuditRequest));
+    }
+
+    /**
+     * 前端首页展示平台签约企业
+     */
+    @GetMapping("/recommend")
+    public BaseResponse<List<Company>> recommend() {
+        // 后端需要过滤平台已经审核通过的规模最大的三家企业
+        List<Company> companyList = companyService.lambdaQuery()
+                .eq(Company::getAuditStatus, AUDIT_STATUS_SUCCESS)
+                .orderByDesc(Company::getScale).last("limit 3")
+                .list();
+        return ResultUtils.success(companyList);
+    }
+
+    /**
+     *  获取企业信息及旗下员工
+     */
+    @GetMapping("/info/{id}")
+    public BaseResponse<CompanyDetailVO> getCompanyDetail(@PathVariable Long id) {
+        // 校验参数
+
+        // 调用 Service 获取聚合数据
+        CompanyDetailVO companyDetailVO = companyService.getCompanyDetailWithEmployees(id);
+        return ResultUtils.success(companyDetailVO);
     }
 
 

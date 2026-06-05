@@ -11,14 +11,18 @@ import com.itxc.housekeepbackend.mapper.CompanyMapper;
 import com.itxc.housekeepbackend.model.dto.company.CompanyRegisterDto;
 import com.itxc.housekeepbackend.model.entity.Company;
 import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
+import com.itxc.housekeepbackend.model.vo.CompanyDetailVO;
 import com.itxc.housekeepbackend.service.CompanyEmployeeService;
 import com.itxc.housekeepbackend.service.CompanyService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 import static com.itxc.housekeepbackend.constant.EmployeeConstant.Employee_ADMIN;
 import static com.itxc.housekeepbackend.constant.StatusConstant.AUDIT_STATUS_DRAFT;
@@ -92,5 +96,37 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
         queryWrapper.orderByDesc(Company::getCreateTime);
 
         return queryWrapper;
+    }
+
+    @Override
+    public CompanyDetailVO getCompanyDetailWithEmployees(Long companyId) {
+        // 1. 查询企业基本信息
+        Company company = this.getById(companyId);
+        if (company == null || company.getIsDeleted() == 1) {
+            throw new RuntimeException("企业信息不存在或已被移除");
+        }
+
+        // 2. 将企业属性拷贝到 VO 对象中
+        CompanyDetailVO vo = new CompanyDetailVO();
+        BeanUtils.copyProperties(company, vo);
+
+        // 3. 查询该企业旗下的家政员
+        LambdaQueryWrapper<CompanyEmployee> empWrapper = new LambdaQueryWrapper<>();
+        empWrapper.eq(CompanyEmployee::getCompanyId, companyId)
+                .eq(CompanyEmployee::getStatus, 1)     // 只查状态启用的
+                .eq(CompanyEmployee::getIsDeleted, 0)  // 未删除的
+                .eq(CompanyEmployee::getRoleType, "STAFF") // 排除管理员，只展示服务员工
+                .orderByDesc(CompanyEmployee::getCreateTime) // 按入职时间最新排序 (若有评分字段可按评分排)
+                .last("LIMIT 3"); // 首页弹窗展示前 3 名即可
+
+        List<CompanyEmployee> topEmployees = companyEmployeeService.list(empWrapper);
+
+        // 4. 数据脱敏：擦除密码字段再返回给前端
+        topEmployees.forEach(emp -> emp.setPassword(null));
+
+        // 5. 组合数据
+        vo.setTopEmployees(topEmployees);
+
+        return vo;
     }
 }

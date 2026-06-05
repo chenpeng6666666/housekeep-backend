@@ -11,6 +11,7 @@
             <result property="coverImg" column="cover_img" jdbcType="VARCHAR"/>
             <result property="unit" column="unit" jdbcType="VARCHAR"/>
             <result property="guidancePrice" column="guidance_price" jdbcType="DECIMAL"/>
+            <result property="baseDuration" column="base_duration" jdbcType="BIGINT"/>
             <result property="description" column="description" jdbcType="VARCHAR"/>
             <result property="status" column="status" jdbcType="TINYINT"/>
             <result property="sort" column="sort" jdbcType="INTEGER"/>
@@ -20,7 +21,7 @@
 
     <sql id="Base_Column_List">
         id,category_id,name,
-        cover_img,unit,guidance_price,
+        cover_img,unit,guidance_price,base_duration,
         description,status,sort,
         create_time,update_time
     </sql>

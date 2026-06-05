@@ -11,6 +11,7 @@ public class ServiceItemAddRequest {
     private String coverImg;
     private String unit;
     private BigDecimal guidancePrice;
+    private Long baseDuration;
     private Integer sort;
     private String description;
     // 上下架状态更新专用

@@ -9,8 +9,11 @@
             <result property="orderNo" column="order_no" jdbcType="VARCHAR"/>
             <result property="userId" column="user_id" jdbcType="BIGINT"/>
             <result property="serviceId" column="service_id" jdbcType="BIGINT"/>
+            <result property="companyId" column="company_id" jdbcType="BIGINT"/>
+            <result property="employeeId" column="employee_id" jdbcType="BIGINT"/>
             <result property="addressId" column="address_id" jdbcType="BIGINT"/>
             <result property="serviceTime" column="service_time" jdbcType="TIMESTAMP"/>
+            <result property="estimatedEndTime" column="estimated_end_time" jdbcType="TIMESTAMP"/>
             <result property="quantity" column="quantity" jdbcType="INTEGER"/>
             <result property="totalAmount" column="total_amount" jdbcType="DECIMAL"/>
             <result property="requireScore" column="require_score" jdbcType="DECIMAL"/>
@@ -23,7 +26,7 @@
 
     <sql id="Base_Column_List">
         id,order_no,user_id,
-        service_id,address_id,service_time,
+        service_id,company_id,employee_id,address_id,service_time,estimated_end_time
         quantity,total_amount,require_score,
         remark,requirement_img,status,create_time,
         update_time

@@ -47,6 +47,11 @@ public class ServiceItem implements Serializable {
     private BigDecimal guidancePrice;
 
     /**
+     * 单份服务基准预估耗时(单位:分钟)
+     */
+    private Long baseDuration;
+
+    /**
      * 服务标准描述/内容说明
      */
     private String description;

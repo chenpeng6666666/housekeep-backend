@@ -2,6 +2,11 @@ package com.itxc.housekeepbackend.mapper;
 
 import com.itxc.housekeepbackend.model.entity.Order;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
 * @author Lenovo
@@ -10,6 +15,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity com.itxc.housekeepbackend.model.entity.Order
 */
 public interface OrderMapper extends BaseMapper<Order> {
+
+
 
 }
 

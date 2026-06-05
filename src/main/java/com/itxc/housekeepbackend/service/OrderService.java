@@ -1,10 +1,13 @@
 package com.itxc.housekeepbackend.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.itxc.housekeepbackend.model.dto.order.BatchDispatchDTO;
+import com.itxc.housekeepbackend.model.dto.order.OrderQueryDTO;
 import com.itxc.housekeepbackend.model.dto.order.OrderSubmitDTO;
 import com.itxc.housekeepbackend.model.entity.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.itxc.housekeepbackend.model.vo.BatchDispatchResultVO;
 import com.itxc.housekeepbackend.model.vo.OrderVO;
 
 /**
@@ -34,22 +37,30 @@ public interface OrderService extends IService<Order> {
 
     /**
      * 封装订单查询条件
+     *
      * @param order
      * @return
      */
-    QueryWrapper getQueryWrapper(Order order);
+    Wrapper<Order> getQueryWrapper(Order order);
 
     /**
      * 用户取消订单
-     * @param id
-     * @return
+     * @param id 订单ID
+     * @return 订单取消结果
      */
     Boolean cancelOrder(Long id);
 
     /**
-     * 处理单个订单派单
-     * @param order
-     * @return
+     * 批量订单派单
+     * @param dto 订单派单请求
+     * @return 派单结果返回
      */
-    boolean processSingleOrderDispatch(Order order);
+    BatchDispatchResultVO batchAutoDispatch(BatchDispatchDTO dto);
+
+    /**
+     * 所有订单分页查询
+     * @param orderQueryDTO 订单分页查询请求
+     * @return 订单分页查询结果
+     */
+    Page<OrderVO> pageAll(OrderQueryDTO orderQueryDTO);
 }

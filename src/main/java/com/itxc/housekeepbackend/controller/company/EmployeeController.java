@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.itxc.housekeepbackend.constant.EmployeeConstant.Employee_ADMIN;
 import static com.itxc.housekeepbackend.constant.UserConstant.COMPANY;
 
 
@@ -52,7 +53,6 @@ public class EmployeeController {
      * 分页多条件查询员工
      */
     @GetMapping("/page")
-    @RequireAuth(COMPANY)
     public BaseResponse<Page<CompanyEmployee>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -85,7 +85,7 @@ public class EmployeeController {
     @RequireAuth(COMPANY)
     public BaseResponse<Boolean> save(@RequestBody EmployeeSaveDTO dto) {
         CompanyEmployee employee = companyEmployeeService.getLoginEmp();
-        ThrowUtils.throwIf(!employee.getRoleType().equals(COMPANY), ErrorCode.NO_AUTH_ERROR, "无权限");
+        ThrowUtils.throwIf(!employee.getRoleType().equals(Employee_ADMIN), ErrorCode.NO_AUTH_ERROR, "无企业管理员权限");
         boolean success = companyEmployeeService.saveOrUpdateEmployeeWithSkills(dto, employee.getCompanyId());
         return ResultUtils.success(success);
     }
@@ -96,6 +96,8 @@ public class EmployeeController {
     @PutMapping("/updateStatus")
     @RequireAuth(COMPANY)
     public BaseResponse<Boolean> updateStatus(@RequestBody CompanyEmployee emp) {
+        CompanyEmployee employee = companyEmployeeService.getLoginEmp();
+        ThrowUtils.throwIf(!employee.getRoleType().equals(Employee_ADMIN), ErrorCode.NO_AUTH_ERROR, "无企业管理员权限");
         CompanyEmployee target = new CompanyEmployee();
         target.setId(emp.getId());
         target.setStatus(emp.getStatus());
@@ -128,6 +130,8 @@ public class EmployeeController {
     @DeleteMapping("/delete/{id}")
     @RequireAuth(COMPANY)
     public BaseResponse<Boolean> delete(@PathVariable Long id) {
+        CompanyEmployee employee = companyEmployeeService.getLoginEmp();
+        ThrowUtils.throwIf(!employee.getRoleType().equals(Employee_ADMIN), ErrorCode.NO_AUTH_ERROR, "无企业管理员权限");
         CompanyEmployee target = new CompanyEmployee();
         target.setId(id);
         target.setIsDeleted(1); // 软删除标记
