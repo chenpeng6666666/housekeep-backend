@@ -11,7 +11,7 @@
  Target Server Version : 50719 (5.7.19)
  File Encoding         : 65001
 
- Date: 08/06/2026 15:33:30
+ Date: 08/06/2026 18:34:13
 */
 
 SET NAMES utf8mb4;
@@ -120,7 +120,7 @@ CREATE TABLE `order`  (
   `require_score` decimal(2, 1) NOT NULL DEFAULT 0.0 COMMENT '阿姨星级要求(0:不限, 4.0:优质, 4.8:金牌)',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '订单备注',
   `requirement_img` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户现场需求图(多模态扩展)',
-  `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '订单状态: 0-待派单, 1-已接单待上门, 2-服务中, 3-已完成, 4-已取消',
+  `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '订单状态: 0-待派单, 1-已派单, 2-企业接单, 3-服务中, 4-已完成, 5-已取消',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
