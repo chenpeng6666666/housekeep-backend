@@ -78,21 +78,6 @@ public class CompanyController {
     }
 
     /**
-     * 企业员工信息分页查询 (仅仅企业管理员可用)
-     */
-//    @GetMapping("/employee/page")
-//    @CheckCompanyAuditAndAdmin
-//    public BaseResponse<Page<CompanyEmployee>> queryEmployeePage(EmployeeQueryRequest request){
-//        // 参数校验
-//        ThrowUtils.throwIf(ObjUtil.isNull(request), ErrorCode.PARAMS_ERROR);
-//        int current = request.getCurrent();
-//        int pageSize = request.getPageSize();
-////        Page<CompanyEmployee> page = companyEmployeeService.page(new Page<>(current, pageSize), companyEmployeeService.getQueryWrapper(request));
-//
-//        return ResultUtils.success(new Page<CompanyEmployee>());
-//    }
-
-    /**
      * 新增企业员工
      */
     @PostMapping("/employee")

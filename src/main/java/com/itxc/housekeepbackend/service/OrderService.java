@@ -4,11 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itxc.housekeepbackend.model.dto.order.BatchDispatchDTO;
 import com.itxc.housekeepbackend.model.dto.order.OrderQueryDTO;
+import com.itxc.housekeepbackend.model.dto.order.OrderRreassignEmpDTO;
 import com.itxc.housekeepbackend.model.dto.order.OrderSubmitDTO;
+import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
 import com.itxc.housekeepbackend.model.entity.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itxc.housekeepbackend.model.vo.BatchDispatchResultVO;
+import com.itxc.housekeepbackend.model.vo.CandidateVO;
 import com.itxc.housekeepbackend.model.vo.OrderVO;
+
+import java.util.List;
 
 /**
 * @author Lenovo
@@ -63,4 +68,43 @@ public interface OrderService extends IService<Order> {
      * @return 订单分页查询结果
      */
     Page<OrderVO> pageAll(OrderQueryDTO orderQueryDTO);
+
+    /**
+     * 企业订单分页查询
+     * @param companyId 企业id
+     * @param current 页号
+     * @param pageSize 页大小
+     * @param status 订单状态
+     * @return 订单分页查询结果
+     */
+    Page<OrderVO> pageCompany(Long companyId, Integer current, Integer pageSize, Integer status);
+
+    /**
+     * 获取订单详情
+     * @param id 订单id
+     * @return 订单详情 VO
+     */
+    OrderVO getOrderDetail(Long id);
+
+
+    /**
+     * 获取当前订单可以替换的员工列表
+     * @param orderId 待替换订单id
+     * @return 可替换员工集合
+     */
+    List<CandidateVO> getEligibleEmp(Long orderId);
+
+    /**
+     * 企业确认接单
+     * @param orderId 订单id
+     * @return 是否确认成功
+     */
+    Boolean acceptOrder(Long orderId);
+
+    /**
+     * 企业订单员工重分配提交
+     * @param dto 更换请求
+     * @return 更换结果
+     */
+    Boolean reassignEmp(OrderRreassignEmpDTO dto);
 }

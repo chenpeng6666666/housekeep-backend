@@ -18,7 +18,7 @@ import java.util.List;
 public interface CompanyEmployeeMapper extends BaseMapper<CompanyEmployee> {
 
     // 联合 employee_service_skill 表，查出拥有该技能、评分达标、且在职的普通员工
-    @Select("SELECT e.id, e.company_id, s.score " +
+    @Select("SELECT e.id, e.real_name, e.company_id, s.score " +
             "FROM company_employee e " +
             "INNER JOIN employee_service_skill s ON e.id = s.employee_id " +
             "WHERE s.service_id = #{serviceId} " +

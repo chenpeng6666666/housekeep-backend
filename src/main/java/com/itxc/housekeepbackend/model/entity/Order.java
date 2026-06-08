@@ -87,7 +87,7 @@ public class Order implements Serializable {
     private String requirementImg;
 
     /**
-     * 订单状态: 0-待派单, 1-已接单待上门, 2-服务中, 3-已完成, 4-已取消
+     * 订单状态: 0-待派单, 1-已派单, 2-企业接单, 3-服务中, 4-已完成, 5-已取消
      */
     private Integer status;
 

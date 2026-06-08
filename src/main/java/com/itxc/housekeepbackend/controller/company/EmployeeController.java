@@ -53,25 +53,19 @@ public class EmployeeController {
      * 分页多条件查询员工
      */
     @GetMapping("/page")
+    @RequireAuth(COMPANY)
     public BaseResponse<Page<CompanyEmployee>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String keyword,// 关键词
             @RequestParam(required = false) String roleType) {
         CompanyEmployee employee = companyEmployeeService.getLoginEmp();
         Page<CompanyEmployee> page = new Page<>(current, pageSize);
 
         LambdaQueryWrapper<CompanyEmployee> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CompanyEmployee::getCompanyId, employee.getCompanyId());
-
-        // 组合模糊查询：姓名或手机号
-        if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(keyword)) {
-            queryWrapper.and(wrapper -> wrapper
-                    .like(CompanyEmployee::getRealName, keyword)
-                    .or()
-                    .like(CompanyEmployee::getPhone, keyword));
-        }
         queryWrapper.eq(roleType != null, CompanyEmployee::getRoleType, roleType);
+        queryWrapper.like(keyword != null, CompanyEmployee::getRealName, keyword); // 组合模糊查询：姓名或手机号
         queryWrapper.orderByDesc(CompanyEmployee::getCreateTime);
 
         Page<CompanyEmployee> result = companyEmployeeService.page(page, queryWrapper);

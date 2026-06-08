@@ -14,6 +14,8 @@ public class CandidateVO {
      * 家政员/员工的主键 ID
      */
     private Long id;
+
+    private String realName; // 员工姓名
     
     /**
      * 所属企业 ID

@@ -7,11 +7,13 @@ import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
 import com.itxc.housekeepbackend.model.dto.order.BatchDispatchDTO;
 import com.itxc.housekeepbackend.model.dto.order.OrderQueryDTO;
+import com.itxc.housekeepbackend.model.dto.order.OrderRreassignEmpDTO;
 import com.itxc.housekeepbackend.model.dto.order.OrderSubmitDTO;
 import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
 import com.itxc.housekeepbackend.model.entity.Order;
 import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.vo.BatchDispatchResultVO;
+import com.itxc.housekeepbackend.model.vo.CandidateVO;
 import com.itxc.housekeepbackend.model.vo.OrderVO;
 import com.itxc.housekeepbackend.service.CompanyEmployeeService;
 import com.itxc.housekeepbackend.service.OrderService;
@@ -21,6 +23,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+
+import java.util.List;
 
 import static com.itxc.housekeepbackend.constant.UserConstant.ADMIN;
 import static com.itxc.housekeepbackend.constant.UserConstant.COMPANY;
@@ -40,7 +44,7 @@ public class OrderController {
     private CompanyEmployeeService companyEmployeeService;
 
     /**
-     * C端用户提交服务预约订单
+     * C端: 用户提交服务预约订单
      */
     @PostMapping("/submit")
     @RequireAuth
@@ -60,11 +64,11 @@ public class OrderController {
                                                  @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                                  Integer status) {
         User loginUser = userService.getLoginUser();
-        return ResultUtils.success(orderService.page(loginUser.getId(), current, pageSize,status));
+        return ResultUtils.success(orderService.page(loginUser.getId(), current, pageSize, status));
     }
 
     /**
-     * 用户取消订单
+     * C端: 用户取消订单
      */
     @PutMapping("/cancel/{id}")
     public BaseResponse<Boolean> cancelOrder(@PathVariable Long id) {
@@ -74,34 +78,59 @@ public class OrderController {
     /**
      * 企业端：分页查询分配给本企业的订单
      */
-    @GetMapping("/company/page")
+    @GetMapping("/companyPage")
     @RequireAuth(COMPANY)
-    public BaseResponse<Page<Order>> getCompanyOrderPage(
+    public BaseResponse<Page<OrderVO>> getCompanyOrderPage(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Integer status
-            ) {
+    ) {
         // 1. 解析出当前登录的企业管理员所在的 companyId
         CompanyEmployee employee = companyEmployeeService.getLoginEmp();
 
-        // 2. 构建查询条件
-        Page<Order> page = new Page<>(current, pageSize);
-        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        // 2. 调用封装好的带有VO关联查询的方法
+        Page<OrderVO> pageVO = orderService.pageCompany(employee.getCompanyId(), current, pageSize, status);
 
-        // 核心过滤：只查属于自己企业的订单
-        wrapper.eq(Order::getCompanyId, employee.getCompanyId());
+        return ResultUtils.success(pageVO);
+    }
 
-        // 可选：按状态过滤 (例如只看 1-待上门 的订单)
-        if (status != null) {
-            wrapper.eq(Order::getStatus, status);
-        }
-        // 按派单时间倒序排
-        wrapper.orderByDesc(Order::getUpdateTime);
+    /**
+     * 企业端：获取某订单可替换的员工列表
+     */
+    @GetMapping("/eligible-employees/{orderId}")
+    @RequireAuth(COMPANY)
+    public BaseResponse<List<CandidateVO>> getEligibleEmployees(@PathVariable Long orderId) {
+        log.info("待替换订单 orderId: {}", orderId);
+        List<CandidateVO> list = orderService.getEligibleEmp(orderId);
+        // 3 返回结果
+        return ResultUtils.success(list);
+    }
 
-        return ResultUtils.success(orderService.page(page, wrapper));
+    /**
+     * 企业确认接单
+     */
+    @PutMapping("/confirm/{orderId}")
+    @RequireAuth(COMPANY)
+    public BaseResponse<Boolean> acceptOrder(@PathVariable Long orderId){
+        log.info("企业接单 orderId: {}", orderId);
+        return ResultUtils.success(orderService.acceptOrder(orderId));
+    }
+
+    /**
+     * 订单重新分配员工
+     */
+    @PutMapping("/reassignEmp")
+    @RequireAuth(COMPANY)
+    public BaseResponse<Boolean> reassignEmp(@RequestBody OrderRreassignEmpDTO dto) {
+        log.info("dto: {}", dto.toString());
+        Boolean b = orderService.reassignEmp(dto);
+        return ResultUtils.success(b);
     }
 
 
+    /**
+     * 平台订单分页查询
+     */
     @GetMapping("/page")
     @RequireAuth(ADMIN)
     public BaseResponse<Page<OrderVO>> listOrderByPage(OrderQueryDTO orderQueryDTO) {
@@ -112,6 +141,9 @@ public class OrderController {
         return ResultUtils.success(orderPage);
     }
 
+    /**
+     * 批量派单
+     */
     @PostMapping("/batch-dispatch")
     @RequireAuth(ADMIN)
     public BaseResponse<BatchDispatchResultVO> batchDispatch(@RequestBody BatchDispatchDTO batchDispatchDTO) {
@@ -120,7 +152,13 @@ public class OrderController {
         return ResultUtils.success(result);
     }
 
-
-
+    /**
+     * 根据ID查询订单详情
+     */
+    @GetMapping("/detail/{id}")
+    public BaseResponse<OrderVO> getOrderDetail(@PathVariable Long id) {
+        OrderVO detail = orderService.getOrderDetail(id);
+        return ResultUtils.success(detail);
+    }
 
 }

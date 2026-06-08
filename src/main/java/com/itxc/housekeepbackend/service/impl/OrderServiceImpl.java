@@ -13,6 +13,7 @@ import com.itxc.housekeepbackend.exception.ThrowUtils;
 import com.itxc.housekeepbackend.mapper.*;
 import com.itxc.housekeepbackend.model.dto.order.BatchDispatchDTO;
 import com.itxc.housekeepbackend.model.dto.order.OrderQueryDTO;
+import com.itxc.housekeepbackend.model.dto.order.OrderRreassignEmpDTO;
 import com.itxc.housekeepbackend.model.dto.order.OrderSubmitDTO;
 import com.itxc.housekeepbackend.model.entity.*;
 import com.itxc.housekeepbackend.model.vo.BatchDispatchResultVO;
@@ -30,15 +31,20 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.itxc.housekeepbackend.constant.OrderConstant.ORDER_STATUS_WAIT_DISPATCH;
+import static com.itxc.housekeepbackend.constant.OrderConstant.ORDER_STATUS_DISPATCHED;
+import static com.itxc.housekeepbackend.constant.OrderConstant.ORDER_STATUS_ACCEPTED;
+import static com.itxc.housekeepbackend.constant.OrderConstant.ORDER_STATUS_SERVICE;
+
 /**
-* @author Lenovo
-* @description 针对表【order(服务预约订单表)】的数据库操作Service实现
-* @createDate 2026-06-01 21:10:37
-*/
+ * @author Lenovo
+ * @description 针对表【order(服务预约订单表)】的数据库操作Service实现
+ * @createDate 2026-06-01 21:10:37
+ */
 @Slf4j
 @Service
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order>
-    implements OrderService{
+        implements OrderService {
 
     @Resource
     private ServiceItemMapper serviceItemMapper;
@@ -57,6 +63,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order>
 
     @Resource
     private CompanyMapper companyMapper;
+
+    @Resource
+    private UserAddressMapper userAddressMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -87,7 +96,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order>
         order.setUserId(userId);
         order.setOrderNo(orderNo);
         order.setTotalAmount(realTotalAmount); // 强制使用后端计算的价格
-        order.setStatus(0); // 初始状态：0-待派单 (或待付款，这里假设直接进入派单池)
+        order.setStatus(ORDER_STATUS_WAIT_DISPATCH); // 初始状态：0-待派单 (或待付款，这里假设直接进入派单池)
         order.setEstimatedEndTime(DateUtil.offsetMinute(dto.getServiceTime(), totalMinutes)); // 固化预估结束时间
 
         // 处理星级要求默认值
@@ -245,7 +254,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order>
                 // --- 派单落盘 ---
                 order.setCompanyId(bestMatch.getCompanyId());
                 order.setEmployeeId(bestMatch.getId());
-                order.setStatus(1); // 状态流转: 1-已接单待上门 (或已分派企业)
+                order.setStatus(ORDER_STATUS_DISPATCHED); // 状态流转: 1-已派单 (等待企业接单)
                 this.updateById(order);
 
                 // 立刻写入排班表，这样下一个循环时，这个阿姨这个时间段就被锁住了！
@@ -333,7 +342,173 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order>
         return voPage;
     }
 
+    @Override
+    public List<CandidateVO> getEligibleEmp(Long orderId) {
+        // 1 首先根据订单id查询订单
+        Order order = this.getById(orderId);
+        ThrowUtils.throwIf(order == null, ErrorCode.PARAMS_ERROR, "当前订单不存在");
+        Long serviceId = order.getServiceId();
+        Long companyId = order.getCompanyId();
+        Long employeeId = order.getEmployeeId();
+        BigDecimal requireScore = order.getRequireScore();
+        Date serviceTime = order.getServiceTime();// 开始时间
+        Date estimatedEndTime = order.getEstimatedEndTime();// 结束时间
+        // 2 根据订单的 服务id/企业id 查询具有相关服务的员工列表（且时间表有空闲、满足订单评分要求的员工），并将原来的订单绑定的员工排除返回
+        // 漏斗1: 技能 + 星级过滤，查出满足条件的候选人（按评分降序）
+        List<CandidateVO> candidates = companyEmployeeMapper.getCandidatesBySkillAndScore(serviceId, requireScore);
+        if (candidates == null || candidates.isEmpty()) {
+            return Collections.emptyList();
+        }
 
+        // 排除当前订单已绑定的员工，且必须属于原订单同一企业
+        List<Long> candidateIds = candidates.stream()
+                .filter(c -> c.getCompanyId() != null && c.getCompanyId().equals(companyId))
+                .map(CandidateVO::getId)
+                .filter(id -> !id.equals(employeeId))
+                .collect(Collectors.toList());
+
+        if (candidateIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 漏斗2: 档期冲突检测，找出时间段内有冲突的员工ID
+        List<Long> busyIds = employeeScheduleMapper.getBusyEmployeeIds(serviceTime, estimatedEndTime, candidateIds);
+        Set<Long> busySet = busyIds != null ? new HashSet<>(busyIds) : Collections.emptySet();
+
+        // 从原始候选列表中筛选出可用的候选人，保持评分降序
+        return candidates.stream()
+                .filter(c -> candidateIds.contains(c.getId()) && !busySet.contains(c.getId()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Boolean acceptOrder(Long orderId) {
+        // 1 查询当前订单是否存在
+        Order order = this.getById(orderId);
+        // 2 参数校验
+
+        // 3 修改订单状态 2-企业接单
+        order.setStatus(ORDER_STATUS_ACCEPTED);
+        return this.updateById(order);
+    }
+
+    @Override
+    public Boolean reassignEmp(OrderRreassignEmpDTO dto) {
+        // 查询当前订单信息
+        Order order = this.getById(dto.getOrderId());
+        ThrowUtils.throwIf(order == null, ErrorCode.PARAMS_ERROR, "当前订单不存在");
+        // 放宽校验状态：只要订单还没开始服务（status <= 2，即待派单/已派单/已接单），就可以更换员工
+        ThrowUtils.throwIf(order.getStatus() > ORDER_STATUS_ACCEPTED, ErrorCode.OPERATION_ERROR, "当前订单状态不允许重新分配");
+        ThrowUtils.throwIf(dto.getEmployeeId() == null, ErrorCode.PARAMS_ERROR, "请选择员工");
+        // 修改当前订单绑定的员工
+        order.setEmployeeId(dto.getEmployeeId());
+        return this.updateById(order);
+    }
+
+    @Override
+    public Page<OrderVO> pageCompany(Long companyId, Integer current, Integer pageSize, Integer status) {
+        // 1. 查询原始订单分页数据
+        Page<Order> page = new Page<>(current, pageSize);
+        LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Order::getCompanyId, companyId);
+        if (status != null) {
+            queryWrapper.eq(Order::getStatus, status);
+        }
+        queryWrapper.orderByDesc(Order::getUpdateTime);
+        Page<Order> orderPage = this.page(page, queryWrapper);
+
+        // 2. 准备构建返回的 VO 分页对象
+        Page<OrderVO> voPage = new Page<>(orderPage.getCurrent(), orderPage.getSize(), orderPage.getTotal());
+        List<Order> records = orderPage.getRecords();
+
+        // 如果当前页没有数据，直接返回空列表
+        if (records == null || records.isEmpty()) {
+            voPage.setRecords(Collections.emptyList());
+            return voPage;
+        }
+
+        // 3. 提取当前页涉及的关联 ID 并批量查询
+        List<Long> serviceIds = records.stream().map(Order::getServiceId).distinct().collect(Collectors.toList());
+        List<Long> employeeIds = records.stream().map(Order::getEmployeeId).filter(id -> id != null).distinct().collect(Collectors.toList());
+
+        Map<Long, String> serviceMap = serviceItemMapper.selectByIds(serviceIds).stream()
+                .collect(Collectors.toMap(ServiceItem::getId, ServiceItem::getName));
+
+        Map<Long, String> employeeMap = employeeIds.isEmpty() ? Collections.emptyMap() :
+                companyEmployeeMapper.selectByIds(employeeIds).stream()
+                        .collect(Collectors.toMap(CompanyEmployee::getId, CompanyEmployee::getRealName));
+
+        // 4. 将 Order 映射为 OrderVO
+        List<OrderVO> voList = records.stream().map(order -> {
+            OrderVO vo = new OrderVO();
+            BeanUtils.copyProperties(order, vo);
+
+            // 动态赋值关联名称
+            vo.setServiceName(serviceMap.getOrDefault(order.getServiceId(), "未知服务"));
+            vo.setEmployeeName(employeeMap.get(order.getEmployeeId()));
+
+            return vo;
+        }).collect(Collectors.toList());
+
+        voPage.setRecords(voList);
+        return voPage;
+    }
+
+    @Override
+    public OrderVO getOrderDetail(Long id) {
+        Order order = this.getById(id);
+        ThrowUtils.throwIf(order == null, ErrorCode.PARAMS_ERROR, "订单不存在");
+
+        OrderVO vo = new OrderVO();
+        BeanUtils.copyProperties(order, vo);
+
+        // 1. 补全服务信息
+        ServiceItem serviceItem = serviceItemMapper.selectById(order.getServiceId());
+        if (serviceItem != null) {
+            vo.setServiceName(serviceItem.getName());
+            vo.setServiceCoverImg(serviceItem.getCoverImg());
+            vo.setServiceDescription(serviceItem.getDescription());
+        } else {
+            vo.setServiceName("未知服务");
+        }
+
+        // 2. 补全企业名称
+        if (order.getCompanyId() != null) {
+            Company company = companyMapper.selectById(order.getCompanyId());
+            if (company != null) {
+                vo.setCompanyName(company.getCompanyName());
+            }
+        }
+
+        // 3. 补全指派员工姓名
+        if (order.getEmployeeId() != null) {
+            CompanyEmployee employee = companyEmployeeMapper.selectById(order.getEmployeeId());
+            if (employee != null) {
+                vo.setEmployeeName(employee.getRealName());
+            }
+        }
+
+        // 4. 补全服务地址详情
+        if (order.getAddressId() != null) {
+            UserAddress address = userAddressMapper.selectById(order.getAddressId());
+            if (address != null) {
+                vo.setContactName(address.getContactName());
+                vo.setContactPhone(address.getPhone());
+                String fullAddress = String.format("%s%s%s %s", 
+                        address.getProvince(), address.getCity(), address.getDistrict(), address.getDetailedAddress());
+                vo.setDetailAddress(fullAddress);
+            }
+        }
+
+        // 5. 补全下单用户信息
+        User user = userMapper.selectById(order.getUserId());
+        if (user != null) {
+            vo.setUserNickname(user.getNickname());
+            vo.setUserPhone(user.getPhone());
+        }
+
+        return vo;
+    }
 }
 
 
