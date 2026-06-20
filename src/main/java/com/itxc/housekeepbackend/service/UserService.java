@@ -7,7 +7,7 @@ import com.itxc.housekeepbackend.model.dto.user.UserRegisterDto;
 import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.vo.UserVO;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
 * @author Lenovo

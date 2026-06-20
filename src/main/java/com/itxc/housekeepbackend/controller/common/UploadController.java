@@ -11,7 +11,6 @@ import com.itxc.housekeepbackend.service.SysAdminService;
 import com.itxc.housekeepbackend.service.UserService;
 import com.itxc.housekeepbackend.utils.AliyunOSSOperator;
 import com.itxc.housekeepbackend.utils.StorageService;
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,10 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @Slf4j
-@Api(tags = "文件上传")
 @RestController
 @RequestMapping("/upload")
 public class UploadController {

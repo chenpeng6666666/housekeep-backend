@@ -1,5 +1,7 @@
 package com.itxc.housekeepbackend.service.impl;
 
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.itxc.housekeepbackend.mapper.ServiceItemMapper;
@@ -8,12 +10,15 @@ import com.itxc.housekeepbackend.model.entity.ServiceItem;
 import com.itxc.housekeepbackend.model.vo.SmartMatchResultVO;
 import com.itxc.housekeepbackend.service.SmartBookingService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeTypeUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
+import java.net.URL;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -22,76 +27,97 @@ public class SmartBookingServiceImpl implements SmartBookingService {
     @Resource
     private ServiceItemMapper serviceItemMapper;
 
+    private final ChatClient chatClient;
+
+    @Value("${spring.ai.dashscope.api-key}")
+    private String apiKey;
+
+    public SmartBookingServiceImpl(ChatClient.Builder builder) {
+        this.chatClient = builder.build();
+    }
+
     @Override
     public SmartMatchResultVO matchService(SmartBookingRequestDTO requestDTO) {
         SmartMatchResultVO result = new SmartMatchResultVO();
         String text = requestDTO.getText();
         String imageUrl = requestDTO.getImageUrl();
 
-        // 设置默认值
         result.setQuantity(1);
-        result.setKeyword("普通保洁");
+        result.setKeyword("日常保洁");
         result.setRemark(text);
 
-        if (StringUtils.isBlank(text) && StringUtils.isBlank(imageUrl)) {// 如果用户提交的预约内容的都是空的
-            // 返回默认的保洁服务
+        if (StringUtils.isBlank(text) && StringUtils.isBlank(imageUrl)) {
             setDefaultService(result);
             return result;
         }
 
-        // 解析关键字
-        String keyword = "";
-        if (StringUtils.isNotBlank(text)) {// 先进行关键词匹配
-            if (text.contains("玻璃")) {
-                keyword = "玻璃";
-            } else if (text.contains("深度") || text.contains("深层") || text.contains("彻底") || text.contains("精细")) {
-                keyword = "深度";
-            } else if (text.contains("开荒") || text.contains("装修")) {
-                keyword = "开荒";
-            } else if (text.contains("家电") || text.contains("空调") || text.contains("清洗") || text.contains("油烟机") || text.contains("洗")) {
-                keyword = "清洗";
-            } else if (text.contains("做饭")) {
-                keyword = "饭";
-            } else if (text.contains("保姆") || text.contains("月嫂") || text.contains("育儿")) {
-                keyword = "嫂";
-            } else if (text.contains("收纳") || text.contains("整理")) {
-                keyword = "收纳";
-            } else if (text.contains("搬家")) {
-                keyword = "搬";
+        try {
+            if (!"YOUR_API_KEY".equals(apiKey) && StringUtils.isNotBlank(apiKey)) {
+                // 构建系统指令
+                String systemText = "你是一个专业的家政智能调度专家。请分析用户的输入（文本和图片），提取核心家政服务关键字、数量和润色后的备注。" +
+                        "严格以JSON格式输出，不要任何多余字符。格式：{\"keyword\":\"保洁/擦玻璃/家电清洗等\",\"quantity\":1,\"remark\":\"重写的话术\"}";
+
+                // 构建用户输入
+                String userText = StringUtils.isNotBlank(text) ? "用户的需求是：" + text : "请根据图片分析需求。";
+                
+                org.springframework.ai.chat.messages.Message systemMessage = new org.springframework.ai.chat.messages.SystemMessage(systemText);
+                
+                String aiResponse;
+                if (StringUtils.isNotBlank(imageUrl)) {
+                    // 多模态调用
+                    UserMessage userMessage = new UserMessage(userText, 
+                            List.of(new org.springframework.ai.model.Media(MimeTypeUtils.IMAGE_JPEG, new URL(imageUrl))));
+                    org.springframework.ai.chat.prompt.Prompt prompt = new org.springframework.ai.chat.prompt.Prompt(List.of(systemMessage, userMessage));
+                    
+                    aiResponse = chatClient.prompt(prompt)
+                            .call()
+                            .content();
+                } else {
+                    // 纯文本调用
+                    UserMessage userMessage = new UserMessage(userText);
+                    org.springframework.ai.chat.prompt.Prompt prompt = new org.springframework.ai.chat.prompt.Prompt(List.of(systemMessage, userMessage));
+                    aiResponse = chatClient.prompt(prompt)
+                            .call()
+                            .content();
+                }
+
+                log.info("Spring AI 返回结果: {}", aiResponse);
+                
+                // 提取 JSON
+                String jsonStr = aiResponse;
+                if (jsonStr.startsWith("```json")) jsonStr = jsonStr.substring(7);
+                if (jsonStr.startsWith("```")) jsonStr = jsonStr.substring(3);
+                if (jsonStr.endsWith("```")) jsonStr = jsonStr.substring(0, jsonStr.length() - 3);
+
+                JSONObject jsonObj = JSONUtil.parseObj(jsonStr.trim());
+                String aiKeyword = jsonObj.getStr("keyword");
+                Integer aiQuantity = jsonObj.getInt("quantity");
+                String aiRemark = jsonObj.getStr("remark");
+
+                if (StringUtils.isNotBlank(aiKeyword)) result.setKeyword(aiKeyword);
+                if (aiQuantity != null && aiQuantity > 0) result.setQuantity(aiQuantity);
+                if (StringUtils.isNotBlank(aiRemark)) result.setRemark(aiRemark);
             }
-        } else if (StringUtils.isNotBlank(imageUrl)) {
-            // 如果只有图片 模拟AI识别出房间脏乱需要保洁
-            keyword = "保洁";
-            result.setRemark("【系统识别】：基于您上传的场景照片，系统智能诊断为保洁需求，已为您匹配最优质的日常保洁服务。");
+        } catch (Exception e) {
+            log.error("Spring AI 调用异常，降级到默认规则", e);
         }
 
-        // 去数据库模糊匹配服务
+        // 数据库模糊匹配
         LambdaQueryWrapper<ServiceItem> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ServiceItem::getStatus, 1);
-        if (StringUtils.isNotBlank(keyword)) {
-            queryWrapper.like(ServiceItem::getName, keyword);
-        }
+        queryWrapper.like(ServiceItem::getName, result.getKeyword());
         List<ServiceItem> serviceItems = serviceItemMapper.selectList(queryWrapper);
 
         ServiceItem matchedItem = null;
         if (!serviceItems.isEmpty()) {
             matchedItem = serviceItems.get(0);
         } else {
-            // 如果没有根据关键字匹配到，尝试搜索"日常保洁"或"保洁"
             LambdaQueryWrapper<ServiceItem> backupWrapper = new LambdaQueryWrapper<>();
             backupWrapper.eq(ServiceItem::getStatus, 1);
             backupWrapper.like(ServiceItem::getName, "保洁");
             List<ServiceItem> backupItems = serviceItemMapper.selectList(backupWrapper);
             if (!backupItems.isEmpty()) {
                 matchedItem = backupItems.get(0);
-            } else {
-                // 如果还匹配不到，查询全部上架服务取第一个作为默认
-                LambdaQueryWrapper<ServiceItem> allWrapper = new LambdaQueryWrapper<>();
-                allWrapper.eq(ServiceItem::getStatus, 1);
-                List<ServiceItem> allItems = serviceItemMapper.selectList(allWrapper);
-                if (!allItems.isEmpty()) {
-                    matchedItem = allItems.get(0);
-                }
             }
         }
 
@@ -99,35 +125,9 @@ public class SmartBookingServiceImpl implements SmartBookingService {
             result.setServiceId(matchedItem.getId());
             result.setServiceName(matchedItem.getName());
             result.setKeyword(matchedItem.getName());
+        } else {
+            setDefaultService(result);
         }
-
-        // 解析数量 (比如：80平米，2小时)
-        if (StringUtils.isNotBlank(text)) {
-            Pattern pattern = Pattern.compile("(\\d+)\\s*(平米|平方米|㎡|小时|个|台|只|次|份)");
-            Matcher matcher = pattern.matcher(text);
-            if (matcher.find()) {
-                try {
-                    int quantity = Integer.parseInt(matcher.group(1));
-                    result.setQuantity(quantity);
-                } catch (NumberFormatException e) {
-                    log.error("解析数量失败", e);
-                }
-            }
-        }
-
-        // 构建更智能的备注
-        StringBuilder remarkBuilder = new StringBuilder();
-        if (StringUtils.isNotBlank(text)) {
-            remarkBuilder.append(text);
-        }
-        if (StringUtils.isNotBlank(imageUrl)) {
-            if (remarkBuilder.length() > 0) {
-                remarkBuilder.append("；（场景图片已上传）");
-            } else {
-                remarkBuilder.append("场景图片已上传，请查看。");
-            }
-        }
-        result.setRemark(remarkBuilder.toString());
 
         return result;
     }

@@ -6,7 +6,7 @@ import com.itxc.housekeepbackend.model.dto.company.CompanyAuditRequest;
 import com.itxc.housekeepbackend.model.entity.SysAdmin;
 import com.itxc.housekeepbackend.model.vo.AdminLoginVo;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Lenovo

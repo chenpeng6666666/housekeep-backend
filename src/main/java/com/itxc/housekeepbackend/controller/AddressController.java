@@ -1,23 +1,16 @@
 package com.itxc.housekeepbackend.controller;
 
-import cn.hutool.core.util.ObjUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.itxc.housekeepbackend.annotation.RequireAuth;
-import com.itxc.housekeepbackend.common.BaseContext;
 import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
-import com.itxc.housekeepbackend.exception.ErrorCode;
-import com.itxc.housekeepbackend.exception.ThrowUtils;
-import com.itxc.housekeepbackend.model.dto.address.AddressDto;
 import com.itxc.housekeepbackend.model.entity.User;
 import com.itxc.housekeepbackend.model.entity.UserAddress;
 import com.itxc.housekeepbackend.service.UserAddressService;
 import com.itxc.housekeepbackend.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 /**

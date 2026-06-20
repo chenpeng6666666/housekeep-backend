@@ -20,8 +20,8 @@ import com.itxc.housekeepbackend.model.vo.AdminLoginVo;
 import com.itxc.housekeepbackend.service.SysAdminService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 
 import static com.itxc.housekeepbackend.constant.StatusConstant.*;
 

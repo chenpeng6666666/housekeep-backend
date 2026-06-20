@@ -6,7 +6,7 @@ import com.itxc.housekeepbackend.model.entity.CompanyEmployee;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itxc.housekeepbackend.model.vo.EmployeeVO;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
 * @author Lenovo
