@@ -21,6 +21,8 @@ import java.util.List;
 @Component
 public class MysqlChatMemory implements ChatMemory {
 
+    private static final int DEFAULT_HISTORY_LIMIT = 10;
+
     @Resource
     private AiChatMessageMapper messageMapper;
 
@@ -30,43 +32,44 @@ public class MysqlChatMemory implements ChatMemory {
     @Resource
     private UserService userService;
 
-
-
     @Override
     public void add(String conversationId, List<Message> messages) {
-        // 获取当前登录用户，如果获取不到默认为 0
         Long userId = 0L;
         try {
             User loginUser = userService.getLoginUser();
             if (loginUser != null) {
                 userId = loginUser.getId();
             }
-        } catch (Exception e) {
-            // 获取不到忽略
+        } catch (Exception ignored) {
+            // Anonymous AI conversations are stored with userId 0.
         }
 
         LambdaQueryWrapper<AiChatSession> sessionQw = new LambdaQueryWrapper<>();
         sessionQw.eq(AiChatSession::getSessionId, conversationId);
         AiChatSession session = sessionMapper.selectOne(sessionQw);
-        
+
+        boolean isNewSession = false;
         if (session == null) {
             session = new AiChatSession();
             session.setSessionId(conversationId);
             session.setUserId(userId);
             session.setTitle("新会话");
+            session.setUpdateTime(new java.util.Date());
             sessionMapper.insert(session);
+            isNewSession = true;
+        } else {
+            session.setUpdateTime(new java.util.Date());
+            sessionMapper.updateById(session);
         }
 
-        // 保存消息
         for (Message msg : messages) {
             AiChatMessage dbMsg = new AiChatMessage();
             dbMsg.setSessionId(conversationId);
-            
+
             if (msg instanceof UserMessage) {
                 dbMsg.setRole("user");
-                // 更新会话标题
                 if ("新会话".equals(session.getTitle()) || session.getTitle() == null) {
-                    String title = msg.getContent();
+                    String title = msg.getText();
                     if (title != null) {
                         title = title.length() > 20 ? title.substring(0, 20) : title;
                         session.setTitle(title);
@@ -80,22 +83,24 @@ public class MysqlChatMemory implements ChatMemory {
             } else {
                 dbMsg.setRole(msg.getMessageType().getValue());
             }
-            dbMsg.setContent(msg.getContent());
+            dbMsg.setContent(msg.getText());
             messageMapper.insert(dbMsg);
         }
     }
 
     @Override
+    public List<Message> get(String conversationId) {
+        return get(conversationId, DEFAULT_HISTORY_LIMIT);
+    }
+
     public List<Message> get(String conversationId, int lastN) {
         LambdaQueryWrapper<AiChatMessage> qw = new LambdaQueryWrapper<>();
         qw.eq(AiChatMessage::getSessionId, conversationId);
         qw.orderByDesc(AiChatMessage::getId);
-        // lastN 一般用于限制携带上下文条数
-        qw.last("limit " + lastN);
+        qw.last("limit " + Math.max(1, lastN));
         List<AiChatMessage> dbList = messageMapper.selectList(qw);
 
         List<Message> results = new ArrayList<>();
-        // 倒序回正
         for (int i = dbList.size() - 1; i >= 0; i--) {
             AiChatMessage dbMsg = dbList.get(i);
             if ("user".equals(dbMsg.getRole())) {
@@ -114,7 +119,7 @@ public class MysqlChatMemory implements ChatMemory {
         LambdaQueryWrapper<AiChatMessage> qw = new LambdaQueryWrapper<>();
         qw.eq(AiChatMessage::getSessionId, conversationId);
         messageMapper.delete(qw);
-        
+
         LambdaQueryWrapper<AiChatSession> sessionQw = new LambdaQueryWrapper<>();
         sessionQw.eq(AiChatSession::getSessionId, conversationId);
         sessionMapper.delete(sessionQw);

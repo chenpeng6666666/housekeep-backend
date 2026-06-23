@@ -4,10 +4,12 @@ import com.itxc.housekeepbackend.common.BaseResponse;
 import com.itxc.housekeepbackend.common.ResultUtils;
 import com.itxc.housekeepbackend.model.dto.AiChatRequestDTO;
 import com.itxc.housekeepbackend.model.dto.SmartBookingRequestDTO;
+import com.itxc.housekeepbackend.model.vo.AiAssistantResponseVO;
 import com.itxc.housekeepbackend.model.vo.AiChatMessageVO;
 import com.itxc.housekeepbackend.model.vo.AiChatSessionVO;
 import com.itxc.housekeepbackend.model.vo.SmartMatchResultVO;
 import com.itxc.housekeepbackend.service.SmartBookingService;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import reactor.core.publisher.Flux;
 
 /**
  * 智慧服务预约控制器
@@ -54,16 +58,31 @@ public class SmartBookingController {
     }
 
     /**
+     * AI 智能体对话：通过后端工具查询服务、生成订单草稿卡片。
+     */
+    @PostMapping("/agent/chat")
+    public BaseResponse<AiAssistantResponseVO> chatAgent(@RequestBody AiChatRequestDTO requestDTO) {
+        String message = requestDTO == null ? "" : requestDTO.getMessage();
+        String sessionId = requestDTO == null ? "" : requestDTO.getSessionId();
+        return ResultUtils.success(smartBookingService.chatAgent(sessionId, message));
+    }
+
+    /**
      * AI智能服务助手对话（流式输出 SSE）
      *
      * @param requestDTO 对话请求参数
      * @return 文本事件流 Flux<String>
      */
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public reactor.core.publisher.Flux<String> chatAssistantStream(@RequestBody AiChatRequestDTO requestDTO) {
+    public Flux<ServerSentEvent<String>> chatAssistantStream(@RequestBody AiChatRequestDTO requestDTO,
+                                                             HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Connection", "keep-alive");
+        response.setHeader("X-Accel-Buffering", "no");
         String message = requestDTO == null ? "" : requestDTO.getMessage();
         String sessionId = requestDTO == null ? "" : requestDTO.getSessionId();
-        return smartBookingService.chatAssistantStream(sessionId, message);
+        return smartBookingService.chatAssistantStream(sessionId, message)
+                .map(chunk -> ServerSentEvent.builder(chunk).build());
     }
 
     /**

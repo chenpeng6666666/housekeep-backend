@@ -28,7 +28,7 @@
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
-                <version>1.0.0-M2</version>
+                <version>1.0.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -130,11 +130,11 @@
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
 
-        <!-- Spring AI Alibaba -->
+        <!-- Spring AI Alibaba DashScope -->
         <dependency>
             <groupId>com.alibaba.cloud.ai</groupId>
-            <artifactId>spring-ai-alibaba-starter</artifactId>
-            <version>1.0.0-M2</version>
+            <artifactId>spring-ai-alibaba-starter-dashscope</artifactId>
+            <version>1.0.0.2</version>
         </dependency>
 
         <!-- 接口文档 (Spring Boot 3 + Jakarta) -->

@@ -9,4 +9,5 @@ public class AiChatSessionVO {
     private String sessionId;
     private String title;
     private Date createTime;
+    private Date updateTime;
 }

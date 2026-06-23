@@ -1,6 +1,7 @@
 package com.itxc.housekeepbackend.service;
 
 import com.itxc.housekeepbackend.model.dto.SmartBookingRequestDTO;
+import com.itxc.housekeepbackend.model.vo.AiAssistantResponseVO;
 import com.itxc.housekeepbackend.model.vo.AiChatMessageVO;
 import com.itxc.housekeepbackend.model.vo.AiChatSessionVO;
 import com.itxc.housekeepbackend.model.vo.SmartMatchResultVO;
@@ -21,6 +22,11 @@ public interface SmartBookingService {
      * @return AI的回复文本
      */
     String chatAssistant(String message);
+
+    /**
+     * 带工具调用能力的智能家政助手。
+     */
+    AiAssistantResponseVO chatAgent(String sessionId, String message);
 
     /**
      * 智能家政AI服务助手流式对话
