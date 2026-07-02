@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.itxc.housekeepbackend.agent.HousekeepingAssistantTools;
+import com.itxc.housekeepbackend.enums.ChatEventTypeEnum;
 import com.itxc.housekeepbackend.mapper.AiChatMessageMapper;
 import com.itxc.housekeepbackend.mapper.AiChatSessionMapper;
 import com.itxc.housekeepbackend.mapper.ServiceItemMapper;
@@ -13,18 +14,18 @@ import com.itxc.housekeepbackend.model.entity.AiChatMessage;
 import com.itxc.housekeepbackend.model.entity.AiChatSession;
 import com.itxc.housekeepbackend.model.entity.ServiceItem;
 import com.itxc.housekeepbackend.model.entity.User;
-import com.itxc.housekeepbackend.model.vo.AiAssistantResponseVO;
-import com.itxc.housekeepbackend.model.vo.AiChatMessageVO;
-import com.itxc.housekeepbackend.model.vo.AiChatSessionVO;
-import com.itxc.housekeepbackend.model.vo.SmartMatchResultVO;
+import com.itxc.housekeepbackend.model.vo.*;
 import com.itxc.housekeepbackend.service.SmartBookingService;
 import com.itxc.housekeepbackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 
@@ -170,6 +171,15 @@ public class SmartBookingServiceImpl implements SmartBookingService {
     @Resource
     private ChatMemory chatMemory;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    private static final String GENERATE_STATUS_KEY = "chat:generate:status";
+
+    public static final ChatEventVO STOP_EVENT = ChatEventVO.builder()
+            .eventType(ChatEventTypeEnum.STOP.getValue())
+            .build();
+
     private static final String AGENT_STREAM_SYSTEM_PROMPT = """
             你是“家政小智”，智慧家政在线服务平台的 AI 助手。
 
@@ -184,9 +194,12 @@ public class SmartBookingServiceImpl implements SmartBookingService {
             """;
 
     @Override
-    public Flux<String> chatAssistantStream(String sessionId, String message) {
+    public Flux<ChatEventVO> chatAssistantStream(String sessionId, String message) {
         if (StringUtils.isBlank(message)) {
-            return Flux.just("您可以告诉我想咨询哪类家政服务，或直接说想预约什么服务。");
+            return Flux.just(com.itxc.housekeepbackend.model.vo.ChatEventVO.builder()
+                    .eventData("您可以告诉我想咨询哪类家政服务，或直接说想预约什么服务。")
+                    .eventType(com.itxc.housekeepbackend.enums.ChatEventTypeEnum.DATA.getValue())
+                    .build());
         }
 
         if ("YOUR_API_KEY".equals(apiKey) || StringUtils.isBlank(apiKey)) {
@@ -198,25 +211,92 @@ public class SmartBookingServiceImpl implements SmartBookingService {
             String toolContext = buildStreamToolContext(message);
             String finalSystemPrompt = AGENT_STREAM_SYSTEM_PROMPT + "\n\n【当前上下文】\n" + toolContext;
 
-            Flux<String> contentStream = chatClient.prompt()
+            BoundHashOperations<String, Object, Object> hashOps = stringRedisTemplate.boundHashOps(GENERATE_STATUS_KEY);
+            StringBuilder outputBuilder = new StringBuilder();
+
+            Flux<ChatEventVO> contentStream = chatClient.prompt()
                     .system(finalSystemPrompt)
                     .user(message)
                     .advisors(MessageChatMemoryAdvisor.builder(chatMemory).conversationId(sid).build())
-                    .stream().content();
+                    .stream().content()
+                    .doFirst(() -> hashOps.put(sid, "true"))
+                    .doOnError(throwable -> hashOps.delete(sid))
+                    .doOnComplete(() -> hashOps.delete(sid))
+                    .doOnCancel(() -> {
+                        // 手动保存被打断的内容
+                        chatMemory.add(sid, List.of(new AssistantMessage(outputBuilder.toString())));
+                    })
+                    .takeWhile(response -> hashOps.get(sid) != null)
+                    .map(text -> {
+                        outputBuilder.append(text);// 流式消息拼接
+                        return ChatEventVO.builder()
+                                .eventData(text)
+                                .eventType(ChatEventTypeEnum.DATA.getValue())
+                                .build();
+                    });
 
-            String cardPayload = buildStreamCardPayload(message);
-            return StringUtils.isNotBlank(cardPayload) ? contentStream.concatWith(Flux.just(cardPayload)) : contentStream;
+            AiAssistantResponseVO response = fallbackAgent(message);
+            if (response.getOrderCard() != null || (response.getServices() != null && !response.getServices().isEmpty())) {
+                java.util.Map<String, Object> paramData = new java.util.HashMap<>();
+                if (response.getOrderCard() != null) {
+                    paramData.put("orderCard", response.getOrderCard());
+                }
+                if (response.getServices() != null && !response.getServices().isEmpty()) {
+                    paramData.put("services", response.getServices());
+                }
+                
+                String paramStr = "[[HOUSEKEEP_PARAMS]]" + cn.hutool.json.JSONUtil.toJsonStr(paramData) + "[[/HOUSEKEEP_PARAMS]]";
+                
+                return contentStream.concatWith(Flux.defer(() -> {
+                    chatMemory.add(sid, java.util.List.of(new org.springframework.ai.chat.messages.AssistantMessage(paramStr)));
+                    return Flux.just(
+                            ChatEventVO.builder()
+                                    .eventData(paramData)
+                                    .eventType(ChatEventTypeEnum.PARAM.getValue())
+                                    .build(),
+                            STOP_EVENT
+                    );
+                }));
+            } else {
+                return contentStream.concatWith(Flux.just(STOP_EVENT));
+            }
         } catch (Exception e) {
             log.error("AI 工具流式助手调用异常，降级到本地工具流程", e);
             return streamFallbackAgent(message);
         }
     }
 
-    private Flux<String> streamFallbackAgent(String message) {
+    private Flux<ChatEventVO> streamFallbackAgent(String message) {
         AiAssistantResponseVO response = fallbackAgent(message);
-        StringBuilder builder = new StringBuilder(response.getContent() == null ? "" : response.getContent());
-        appendCardPayload(builder, response);
-        return Flux.fromArray(builder.toString().split("(?<=.)"));
+        String text = response.getContent() == null ? "" : response.getContent();
+        
+        java.util.List<com.itxc.housekeepbackend.model.vo.ChatEventVO> events = new java.util.ArrayList<>();
+        for (String c : text.split("(?<=.)")) {
+            events.add(ChatEventVO.builder()
+                    .eventData(c)
+                    .eventType(ChatEventTypeEnum.DATA.getValue())
+                    .build());
+        }
+        
+        if (response.getOrderCard() != null || (response.getServices() != null && !response.getServices().isEmpty())) {
+            java.util.Map<String, Object> paramData = new java.util.HashMap<>();
+            if (response.getOrderCard() != null) paramData.put("orderCard", response.getOrderCard());
+            if (response.getServices() != null) paramData.put("services", response.getServices());
+            events.add(com.itxc.housekeepbackend.model.vo.ChatEventVO.builder()
+                    .eventData(paramData)
+                    .eventType(ChatEventTypeEnum.PARAM.getValue())
+                    .build());
+        }
+        events.add(STOP_EVENT);
+        return Flux.fromIterable(events);
+    }
+
+    @Override
+    public void stopChat(String sessionId) {
+        if (StringUtils.isNotBlank(sessionId)) {
+            org.springframework.data.redis.core.BoundHashOperations<String, Object, Object> hashOps = stringRedisTemplate.boundHashOps(GENERATE_STATUS_KEY);
+            hashOps.delete(sessionId);
+        }
     }
 
     private String buildStreamToolContext(String message) {
@@ -318,7 +398,7 @@ public class SmartBookingServiceImpl implements SmartBookingService {
         String keyword = guessServiceKeyword(message);
         List<AiAssistantResponseVO.ServiceCard> services = housekeepingAssistantTools.searchServicesDirect(keyword);
         if (services == null || services.isEmpty()) {
-            return textResponse("我暂时没有匹配到合适的服务。请补充服务类型，例如保洁、开荒、擦玻璃、家电清洗或月嫂。");
+            return textResponse("我暂时没有匹配到合适的服务。请补充服务类型，例如空调维修、厨房清理、老人看护、冰箱维修。");
         }
 
         AiAssistantResponseVO response = new AiAssistantResponseVO();

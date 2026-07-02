@@ -29,12 +29,15 @@ public interface SmartBookingService {
     AiAssistantResponseVO chatAgent(String sessionId, String message);
 
     /**
-     * 智能家政AI服务助手流式对话
-     * @param sessionId 会话ID
-     * @param message 用户消息
-     * @return AI的流式回复文本
+     * AI智能服务助手对话（流式输出 SSE）
      */
-    Flux<String> chatAssistantStream(String sessionId, String message);
+    reactor.core.publisher.Flux<com.itxc.housekeepbackend.model.vo.ChatEventVO> chatAssistantStream(String sessionId, String message);
+
+    /**
+     * 打断AI对话流式输出
+     * @param sessionId 会话ID
+     */
+    void stopChat(String sessionId);
 
     /**
      * 获取当前用户的历史会话列表

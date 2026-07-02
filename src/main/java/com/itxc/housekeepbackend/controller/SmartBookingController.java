@@ -74,7 +74,7 @@ public class SmartBookingController {
      * @return 文本事件流 Flux<String>
      */
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<String>> chatAssistantStream(@RequestBody AiChatRequestDTO requestDTO,
+    public Flux<ServerSentEvent<com.itxc.housekeepbackend.model.vo.ChatEventVO>> chatAssistantStream(@RequestBody AiChatRequestDTO requestDTO,
                                                              HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-cache");
         response.setHeader("Connection", "keep-alive");
@@ -83,6 +83,16 @@ public class SmartBookingController {
         String sessionId = requestDTO == null ? "" : requestDTO.getSessionId();
         return smartBookingService.chatAssistantStream(sessionId, message)
                 .map(chunk -> ServerSentEvent.builder(chunk).build());
+    }
+
+    /**
+     * 打断AI对话流式输出
+     */
+    @PostMapping("/chat/stop")
+    public BaseResponse<Boolean> stopChat(@RequestBody AiChatRequestDTO requestDTO) {
+        String sessionId = requestDTO == null ? "" : requestDTO.getSessionId();
+        smartBookingService.stopChat(sessionId);
+        return ResultUtils.success(true);
     }
 
     /**
